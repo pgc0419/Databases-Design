@@ -161,11 +161,185 @@ export const createSql = {
     const result = await promisePool.query(`INSERT INTO seat_reservation VALUES (${data.cId});`)
     return result[0];
   },
-  
 }
 
 export const updateSql = {
+  updateAirport: async(data) => {
+    const {Airport_code, Name, City, State} = data;
+    const params = [Name, City, State, Airport_code];
+    const sql = `
+      UPDATE airport
+      SET
+        Name = ?,
+        City = ?,
+        State = ?
+      WHERE
+        Airport_code = ?;
+    `;
+    const [result] = await promisePool.query(sql, params);
+    return result;
+  },
 
+  updateCanLand: async(data) => {
+    const {Airplane_type_name, Airport_code} = data;
+    const params = [Airplane_type_name, Airport_code];
+    const sql = `
+      UPDATE can_land
+      SET
+        Airplane_type_name = ?
+      WHERE
+        Airport_code = ?;
+    `;
+    const [result] = await promisePool.query(sql, params);
+    return result;
+  },
+
+  updateAirplaneType: async(data) => {
+    const {Airplane_type_name, Max_seats, Company} = data;
+    const params = [Max_seats, Company, Airplane_type_name];
+    const sql = `
+      UPDATE airplane_type
+      SET
+        Max_seats = ?,
+        Company = ?
+      WHERE
+        Airplane_type_name = ?;
+    `;
+    const [result] = await promisePool.query(sql, params);
+    return result;
+  },
+
+  updateAirplane: async(data) => {
+    const {Airplane_id, Total_number_of_seats, Airplane_type} = data;
+    const params = [Total_number_of_seats, Airplane_type, Airplane_id];
+    const sql = `
+      UPDATE airplane
+      SET
+        Total_number_of_seats = ?,
+        Airplane_type = ?
+      WHERE
+        Airplane_id = ?;
+    `;
+    const [result] = await promisePool.query(sql, params);
+    return result;
+  },
+
+  updateFare: async(data) => {
+    const {Flight_number, Fare_code, Amount, Restrictions} = data;
+    const params = [Flight_number, Amount, Restrictions, Fare_code];
+    const sql = `
+      UPDATE fare
+      SET
+        Flight_number = ?,
+        Amount = ?,
+        Restrictions = ?
+      WHERE
+        Fare_code = ?;
+    `;
+    const [result] = await promisePool.query(sql, params);
+    return result;
+  },
+
+  updateFlight: async(data) => {
+    const {Flight_number, Airline, Weekdays} = data;
+    const params = [Airline, Weekdays, Flight_number];
+    const sql = `
+      UPDATE flight
+      SET
+        Airline = ?,
+        Weekdays = ?
+      WHERE
+        Flight_number = ?;
+    `;
+    const [result] = await promisePool.query(sql, params);
+    return result;
+  },
+
+  updateFlightLeg: async(data) => {
+    const {
+      Flight_number, Leg_number, 
+      Departure_airport_code, Scheduled_departure_time, 
+      Arrival_airport_code, Scheduled_arrival_time
+    } = data;
+    const params = [
+      Flight_number,
+      Departure_airport_code, Scheduled_departure_time, 
+      Arrival_airport_code, Scheduled_arrival_time,
+      Leg_number
+    ];
+    const sql = `
+      UPDATE flight_leg
+      SET
+        Flight_number = ?,
+        Departure_airport_code = ?,
+        Scheduled_departure_time,
+        Arrival_airport_code,
+        Scheduled_arrival_time
+      WHERE
+        Leg_number = ?;
+    `;
+    const [result] = await promisePool.query(sql, params);
+    return result;
+  },
+
+  updateLegInstance: async(data) => {
+    const {
+      Flight_number, Leg_number, Date,
+      Number_of_availabe_seats, Airplane_id,
+      Departure_airport_code, Departure_time, 
+      Arrival_airport_code, Arrival_time
+    } = data;
+    const params = [
+      Flight_number, Leg_number, 
+      Number_of_availabe_seats, Airplane_id,
+      Departure_airport_code, Departure_time, 
+      Arrival_airport_code, Arrival_time,
+      Date
+    ];
+    const sql = `
+      UPDATE leg_instance
+      SET
+        Flight_number = ?,
+        Leg_number = ?,
+        Number_of_availabe_seats = ?,
+        Airplane_id = ?,
+        Departure_airport_code = ?,
+        Departure_time,
+        Arrival_airport_code,
+        Arrival_time
+      WHERE
+        Date = ?;
+    `;
+    const [result] = await promisePool.query(sql, params);
+    return result;
+  },
+
+  updateSeatReservation: async(data) => {
+    const {
+      Flight_number, Leg_number, Date,
+      Seat_number, Customer_name, Customer_phone,
+      User_id
+    } = data;
+    const params = [
+      Flight_number, Leg_number, Date,
+      Customer_name, Customer_phone, User_id,
+      Seat_number
+    ];
+    const sql = `
+      UPDATE flight_leg
+      SET
+        Flight_number = ?,
+        Leg_number = ?,
+        Date = ?,
+        Customer_name = ?,
+        Customer_phone = ?,
+        User_id = ?
+      WHERE
+        Seat_number;
+    `;
+    const [result] = await promisePool.query(sql, params);
+    return result;
+  },
 }
 
 export const deleteSql = {
