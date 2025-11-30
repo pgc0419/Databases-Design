@@ -117,7 +117,51 @@ export const selectSql = {
 }
 
 export const createSql = {
+  addAirport: async(data) => {
+    const result = await promisePool.query(`INSERT INTO airport VALUES (${data.cId});`)
+    return result[0];
+  },
 
+  addCanLand: async(data) => {
+    const result = await promisePool.query(`INSERT INTO can_land VALUES (${data.cId});`)
+    return result[0];
+  },
+
+  addAirplaneType: async(data) => {
+    const result = await promisePool.query(`INSERT INTO airplane_type VALUES (${data.cId});`)
+    return result[0];
+  },
+
+  addAirplane: async(data) => {
+    const result = await promisePool.query(`INSERT INTO airplane VALUES (${data.cId});`)
+    return result[0];
+  },
+
+  addFare: async(data) => {
+    const result = await promisePool.query(`INSERT INTO fare VALUES (${data.cId});`)
+    return result[0];
+  },
+
+  addFlight: async(data) => {
+    const result = await promisePool.query(`INSERT INTO flight VALUES (${data.cId});`)
+    return result[0];
+  },
+
+  addFlightLeg: async(data) => {
+    const result = await promisePool.query(`INSERT INTO flight_leg VALUES (${data.cId});`)
+    return result[0];
+  },
+
+  addLegInstance: async(data) => {
+    const result = await promisePool.query(`INSERT INTO leg_instance VALUES (${data.cId});`)
+    return result[0];
+  },
+
+  addSeatReservation: async(data) => {
+    const result = await promisePool.query(`INSERT INTO seat_reservation VALUES (${data.cId});`)
+    return result[0];
+  },
+  
 }
 
 export const updateSql = {
