@@ -343,5 +343,76 @@ export const updateSql = {
 }
 
 export const deleteSql = {
+  deleteAirport: async (id) => {
+    const sql = `
+      DELETE airport WHERE airport_code = ?
+    `;
+    const [result] = await promisePool.query(sql, id);
+    return result;
+  },
+
+  deleteCanLand: async (airport_code, airplane_type_name) => {
+    const sql = `
+      DELETE can_land WHERE airport_code = ? and airplane_type_name = ?
+    `;
+    const [result] = await promisePool.query(sql, [airport_code, airplane_type_name]);
+    return result;
+  },
+
+  deleteAirplaneType: async (id) => {
+    const sql = `
+      DELETE airplane_type WHERE airplane_type_name = ?
+    `;
+    const [result] = await promisePool.query(sql, id);
+    return result;
+  },
+
+  deleteAirplane: async (id) => {
+    const sql = `
+      DELETE airplane WHERE airplane_id = ?
+    `;
+    const [result] = await promisePool.query(sql, id);
+    return result;
+  },
+
+  deleteFare: async (id) => {
+    const sql = `
+      DELETE fare WHERE fare_code = ?
+    `;
+    const [result] = await promisePool.query(sql, id);
+    return result;
+  },
+
+  deleteFlight: async (id) => {
+    const sql = `
+      DELETE Flight WHERE flight_number = ?
+    `;
+    const [result] = await promisePool.query(sql, id);
+    return result;
+  },
+
+  deleteFlightLeg: async (id) => {
+    const sql = `
+      DELETE flight_leg WHERE leg_number = ?
+    `;
+    const [result] = await promisePool.query(sql, id);
+    return result;
+  },
+
+  deleteLegInstance: async (id) => {
+    const sql = `
+      DELETE leg_instance WHERE leg_instance = ?
+    `;
+    const [result] = await promisePool.query(sql, id);
+    return result;
+  },
+
+  deleteSeatReservation: async (id, user_id) => {
+    const sql = `
+      DELETE Seat_reservation WHERE seat_number = ? and user_id = ?
+    `;
+    const [result] = await promisePool.query(sql, [id, user_id]);
+    return result;
+  },
     
 }
