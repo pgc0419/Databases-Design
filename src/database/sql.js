@@ -14,59 +14,6 @@ const pool = mysql.createPool(
 
 const promisePool = pool.promise();
 
-export const createViewSql = {
-  createAirportLanding: async () => {
-    const sql = `
-      CREATE VIEW airport_landing_v AS
-      SELECT
-        a.Airport_code,
-        a.Name,
-        a.City,
-        a.State,
-        at.Airplane_type_name,
-        at.Max_seats,
-        at.Company
-      FROM airport a
-      JOIN can_land cl ON a.Airport_code = cl.Airport_code
-      JOIN airplane_type at ON cl.Airplane_type_name = at.Airplane_type_name
-    `;
-    const [result] = await promisePool.query(sql);
-    return result;
-  },
-
-  createAirplaneDetail: async() => {
-    const sql = `
-      CREATE VIEW airplane_detail_v AS
-      SELECT
-        ap.Airplane_id,
-        ap.Total_number_of_seats,
-        ap.Airplane_type,
-        at.Company
-      FROM airplane ap
-      JOIN airplane_type at ON at.airplane_type_name = ap.Airplane_type;
-    `;
-    const [result] = await promisePool.query(sql);
-    return result;
-  },
-
-  createFlightFare: async() => {
-    const sql = `
-      CREATE VIEW flight_fare_v AS
-      SELECT
-        f.Flight_number,
-        f.Airline,
-        f.Weekdays,
-        fa.Fare_code,
-        fa.Amount,
-        fa.Restrictions
-      FROM flight f
-      JOIN fare fa ON fa.Flight_number = f.Flight_number;
-    `;
-    const [result] = await promisePool.query(sql);
-    return result;
-  }
-}
-
 export const selectSql = {
   getUser: async () => {
     const sql = `select * from user`;
@@ -148,48 +95,244 @@ export const selectSql = {
 
 export const createSql = {
   addAirport: async(data) => {
-    const result = await promisePool.query(`INSERT INTO airport VALUES (${data.cId});`)
-    return result[0];
-  },
-
-  addCanLand: async(data) => {
-    const result = await promisePool.query(`INSERT INTO can_land VALUES (${data.cId});`)
+    const sql = `INSERT INTO airport VALUES (?, ?, ?, ?)`;
+    const [result] = await promisePool.query(sql, [data.Airport_code, data.Name, data.City, data.State]);
     return result[0];
   },
 
   addAirplaneType: async(data) => {
-    const result = await promisePool.query(`INSERT INTO airplane_type VALUES (${data.cId});`)
+    const sql = `INSERT INTO airplane_type VALUES (?, ?, ?)`;
+    const [result] = await promisePool.query(sql, [data.Airport_type_name, data.Max_seats, data.Company]);
     return result[0];
   },
 
+  addCanLand: async(data) => {
+    const {airplane_type_name, airport_code} = data;
+    try {
+      const [typeCheck] = await promisePool.query(
+        `SELECT COUNT(*) AS count FROM airplane_type WHERE airplane_type_name = ?`, [airplane_type_name]
+      );
+      if (typeCheck[0].count == 0) {
+        throw new Error(`Error: Airlane Type does not exist`)
+      }
+
+      const [airportCheck] = await promisePool.query(
+        `SELECT COUNT(*) AS count FROM airport WHERE airport_code = ?`, [airport_code]
+      );
+      if (airportCheck[0].count == 0) {
+        throw new Error(`Error: Airport Code does not exist`)
+      }
+
+      const [result] = await promisePool.query(
+        `INSERT INTO can_land VALUES (?, ?)`, [airplane_type_name, airport_code]
+      );
+
+      return result;
+    } catch (error) {
+      throw error;
+    }
+  },
+
   addAirplane: async(data) => {
-    const result = await promisePool.query(`INSERT INTO airplane VALUES (${data.cId});`)
+    const {airplane_id, Total_number_of_seats, airplane_type} = data;
+    try {
+      const [typeCheck] = await promisePool.query(
+        `SELECT COUNT(*) AS count FROM airplane_type WHERE airplane_type_name = ?`, [airplane_type]
+      );
+      if (typeCheck[0].count == 0) {
+        throw new Error(`Error: Airlane Type does not exist`)
+      }
+
+      const [seatsCheck] = await promisePool.query(
+        `SELECT max_seats AS seats FROM airplane_type WHERE airplane_type_name = ?`, [airplane_type]
+      );
+      if (seatsCheck[0].seats != Total_number_of_seats) {
+        throw new Error(`Error: seats does not match`)
+      }
+
+      const [result] = await promisePool.query(
+        `INSERT INTO airplane VALUES (?, ?, ?)`, [airplane_id, Total_number_of_seats, airplane_type]
+      );
+
+      return result;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  addFlight: async(data) => {
+    const sql = `INSERT INTO flight VALUES (?, ?, ?)`;
+    const [result] = await promisePool.query(sql, [data.Flight_number, data.Airline, data.Weekdays]);
     return result[0];
   },
 
   addFare: async(data) => {
-    const result = await promisePool.query(`INSERT INTO fare VALUES (${data.cId});`)
-    return result[0];
-  },
+    const {flight_number, fare_code, Amount, Restrictions} = data;
+    try {
+      const [numCheck] = await promisePool.query(
+        `SELECT COUNT(*) AS count FROM flight WHERE flight_number = ?`, [flight_number]
+      );
+      if (numCheck[0].count == 0) {
+        throw new Error(`Error: flight number does not exist`)
+      }
 
-  addFlight: async(data) => {
-    const result = await promisePool.query(`INSERT INTO flight VALUES (${data.cId});`)
-    return result[0];
+      const [result] = await promisePool.query(
+        `INSERT INTO fare VALUES (?, ?, ?, ?)`, [flight_number, fare_code, Amount, Restrictions]
+      );
+
+      return result;
+    } catch (error) {
+      throw error;
+    }
   },
 
   addFlightLeg: async(data) => {
-    const result = await promisePool.query(`INSERT INTO flight_leg VALUES (${data.cId});`)
-    return result[0];
+    const {
+      flight_number, leg_number, 
+      Departure_airport_code, Scheduled_departure_time, 
+      Arrival_airport_code, Scheduled_arrival_time
+    } = data;
+
+    try {
+      const [numCheck] = await promisePool.query(
+        `SELECT COUNT(*) AS count FROM flight WHERE flight_number = ?`, [flight_number]
+      );
+      if (numCheck[0].count == 0) {
+        throw new Error(`Error: flight number does not exist`)
+      }
+
+      const [airportCheck1] = await promisePool.query(
+        `SELECT COUNT(*) AS count FROM airport WHERE airport_code = ?`, [Departure_airport_code]
+      );
+      const [airportCheck2] = await promisePool.query(
+        `SELECT COUNT(*) AS count FROM airport WHERE airport_code = ?`, [Arrival_airport_code]
+      );
+      if (airportCheck1[0].count == 0 || airportCheck2[0].count == 0) {
+        throw new Error(`Error: Airport Code does not exist`)
+      }
+
+      const [result] = await promisePool.query(
+        `INSERT INTO flight_leg VALUES (?, ?, ?, ?, ?, ?)`, [
+          flight_number, leg_number, 
+          Departure_airport_code, Scheduled_departure_time, 
+          Arrival_airport_code, Scheduled_arrival_time
+        ]
+      );
+
+      return result;
+    } catch (error) {
+      throw error;
+    }
   },
 
   addLegInstance: async(data) => {
-    const result = await promisePool.query(`INSERT INTO leg_instance VALUES (${data.cId});`)
-    return result[0];
+    const {
+      flight_number, leg_number, Date,
+      Number_of_availabe_seats, Airplane_id,
+      Departure_airport_code, Departure_time, 
+      Arrival_airport_code, Arrival_time
+    } = data;
+
+    try {
+      const [numCheck1] = await promisePool.query(
+        `SELECT COUNT(*) AS count FROM flight WHERE flight_number = ?`, [flight_number]
+      );
+      const [numCheck2] = await promisePool.query(
+        `SELECT COUNT(*) AS count FROM flight_leg WHERE leg_number = ?`, [leg_number]
+      );
+      const [numCheck3] = await promisePool.query(
+        `SELECT COUNT(*) AS count FROM airplane WHERE airplane_id = ?`, [Airplane_id]
+      );
+      if (numCheck1[0].count == 0 || numCheck2[0].count == 0 || numCheck3[0].count == 0 ) {
+        throw new Error(`Error: FK does not exist`)
+      }
+
+      const [seatsCheck] = await promisePool.query(
+        `SELECT total_number_of_seats AS seats FROM airplane WHERE airplane_id = ?`, [Airplane_id]
+      );
+      if (seatsCheck[0].seats < Number_of_availabe_seats) {
+        throw new Error(`Error: seats are too many`)
+      }
+
+      const [airportCheck1] = await promisePool.query(
+        `SELECT COUNT(*) AS count FROM airport WHERE airport_code = ?`, [Departure_airport_code]
+      );
+      const [airportCheck2] = await promisePool.query(
+        `SELECT COUNT(*) AS count FROM airport WHERE airport_code = ?`, [Arrival_airport_code]
+      );
+      if (airportCheck1[0].count == 0 || airportCheck2[0].count == 0) {
+        throw new Error(`Error: Airport Code does not exist`)
+      }
+
+      const [result] = await promisePool.query(
+        `INSERT INTO leg_instance VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`, [
+          flight_number, leg_number, Date,
+          Number_of_availabe_seats, Airplane_id,
+          Departure_airport_code, Departure_time, 
+          Arrival_airport_code, Arrival_time
+        ]
+      );
+
+      return result;
+    } catch (error) {
+      throw error;
+    }
   },
 
   addSeatReservation: async(data) => {
-    const result = await promisePool.query(`INSERT INTO seat_reservation VALUES (${data.cId});`)
-    return result[0];
+    const {
+      flight_number, leg_number, Date,
+      Seat_number, Customer_name,
+      Customer_phone, User_id
+    } = data;
+
+    try {
+      const [numCheck1] = await promisePool.query(
+        `SELECT COUNT(*) AS count FROM flight WHERE flight_number = ?`, [flight_number]
+      );
+      const [numCheck2] = await promisePool.query(
+        `SELECT COUNT(*) AS count FROM flight_leg WHERE leg_number = ?`, [leg_number]
+      );
+      const [numCheck3] = await promisePool.query(
+        `SELECT COUNT(*) AS count FROM leg_instance WHERE date = ?`, [Date]
+      );
+      const [numCheck4] = await promisePool.query(
+        `SELECT COUNT(*) AS count FROM user WHERE user_id = ?`, [User_id]
+      );
+      if (numCheck1[0].count == 0 || numCheck2[0].count == 0 || numCheck3[0].count == 0 || numCheck4[0].count == 0) {
+        throw new Error(`Error: FK does not exist`)
+      }
+
+      const [seatsCheck] = await promisePool.query(
+        `SELECT Number_of_availabe_seats AS seats FROM leg_instance WHERE leg_number = ?`, [leg_number]
+      );
+      if (seatsCheck[0].seats < Seat_number) {
+        throw new Error(`Error: seats are too many`)
+      }
+
+      const [nameCheck] = await promisePool.query(
+        `SELECT name AS n FROM user WHERE user_id = ?`, [User_id]
+      );
+      const [phoneCheck] = await promisePool.query(
+        `SELECT phone AS p FROM user WHERE user_id = ?`, [User_id]
+      );
+      if (nameCheck[0].n != Customer_name || phoneCheck[0].p != Customer_phone) {
+        throw new Error(`Error: User & Customer does not match`)
+      }
+
+      const [result] = await promisePool.query(
+        `INSERT INTO leg_instance VALUES (?, ?, ?, ?, ?, ?, ?)`, [
+          flight_number, leg_number, Date,
+          flight_number, leg_number, Date,
+          Seat_number, Customer_name,
+          Customer_phone, User_id
+        ]
+      );
+
+      return result;
+    } catch (error) {
+      throw error;
+    }
   },
 }
 
