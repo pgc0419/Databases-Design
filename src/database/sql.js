@@ -14,21 +14,10 @@ const pool = mysql.createPool(
 
 const promisePool = pool.promise();
 
-export const selectSql = {
-  getUser: async () => {
-    const sql = `select * from user`;
-    const [result] = await promisePool.query(sql);
-    return result;
-  },
-
-  getUserByEmail: async (userEmail) => {
-    const sql = `select * from user where email = ?`;
-    const [result] = await promisePool.query(sql);
-    return result;
-  },
-
-  getAirport: async () => {
+export const createViewSql = {
+  createAirportLanding: async () => {
     const sql = `
+      CREATE VIEW airport_landing_v AS
       SELECT
         a.Airport_code,
         a.Name,
@@ -45,22 +34,24 @@ export const selectSql = {
     return result;
   },
 
-  getAirplane: async () => {
+  createAirplaneDetail: async() => {
     const sql = `
+      CREATE VIEW airplane_detail_v AS
       SELECT
         ap.Airplane_id,
         ap.Total_number_of_seats,
         ap.Airplane_type,
         at.Company
       FROM airplane ap
-      JOIN airplane_type at ON at.airplane_type_name = ap.Airplane_type
+      JOIN airplane_type at ON at.airplane_type_name = ap.Airplane_type;
     `;
     const [result] = await promisePool.query(sql);
     return result;
   },
 
-  getFlight: async () => {
+  createFlightFare: async() => {
     const sql = `
+      CREATE VIEW flight_fare_v AS
       SELECT
         f.Flight_number,
         f.Airline,
@@ -69,8 +60,40 @@ export const selectSql = {
         fa.Amount,
         fa.Restrictions
       FROM flight f
-      JOIN fare fa ON fa.Flight_number = f.Flight_number
+      JOIN fare fa ON fa.Flight_number = f.Flight_number;
     `;
+    const [result] = await promisePool.query(sql);
+    return result;
+  }
+}
+
+export const selectSql = {
+  getUser: async () => {
+    const sql = `select * from user`;
+    const [result] = await promisePool.query(sql);
+    return result;
+  },
+
+  getUserByEmail: async (userEmail) => {
+    const sql = `select * from user where email = ?`;
+    const [result] = await promisePool.query(sql, [userEmail]);
+    return result;
+  },
+
+  getAirport: async () => {
+    const sql = `SELECT * FROM airport_landing_v`;
+    const [result] = await promisePool.query(sql);
+    return result;
+  },
+
+  getAirplane: async () => {
+    const sql = `SELECT * FROM airplane_detail_v`;
+    const [result] = await promisePool.query(sql);
+    return result;
+  },
+
+  getFlight: async () => {
+    const sql = `SELECT * FROM flight_fare_v`;
     const [result] = await promisePool.query(sql);
     return result;
   },
