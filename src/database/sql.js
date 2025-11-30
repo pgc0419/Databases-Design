@@ -21,6 +21,12 @@ export const selectSql = {
     return result;
   },
 
+  getUserByEmail: async (userEmail) => {
+    const sql = `select * from user where email = ?`;
+    const [result] = await promisePool.query(sql);
+    return result;
+  },
+
   getAirport: async () => {
     const sql = `
       SELECT

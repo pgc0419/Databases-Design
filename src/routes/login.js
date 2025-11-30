@@ -12,11 +12,24 @@ router.use(expressSession({
     saveUninitialized: true,
 }))
 
-router.get('/', (req, res) => {
-    if (req.cookies.user) {
-        res.render('main', { 
-            'user': req.cookies.user,
-        });
+router.get('/', async (req, res) => {
+    const userEmail = req.cookies.user_email;
+    if (userEmail) {
+        const user = await selectSql.getUserByEmail(userEmail);
+
+        if (user && user.role == "user") {
+            res.render('user', { 
+                'user': user,
+            });
+        } else if (user && user.role == "admin"){
+            res.render('admin', {
+                'user': user,
+            })
+        } else {
+            res.clearCookie('user_email');
+            res.render('login');
+        }
+        
     } else {
         res.render('login');
     }
@@ -45,7 +58,7 @@ router.post('/', async (req, res) => {
     })
 
     if (checkLogin) {
-        res.cookie('user', whoAmI, {
+        res.cookie('user_email', whoAmI, {
             expires: new Date(Date.now() + 3600000), // ms 단위 (3600000: 1시간 유효)
             httpOnly: true
         })
