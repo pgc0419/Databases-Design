@@ -110,12 +110,13 @@ export const selectSql = {
   getSeatReservation: async(date, user_id) => {
     const sql = `
       SELECT
-        Seat_number,
-        Customer_name,
-        Customer_phone,
-        User_id
-      FROM seat_reservation
-      WHERE Date = ? and User_id = ?
+        sr.Seat_number,
+        u.Name,
+        u.Phone,
+        sr.User_id
+      FROM seat_reservation sr
+      JOIN user u ON u.user_id = sr.User_id
+      WHERE Date = ? and u.User_id = ?
     `;
     const [result] = await promisePool.query(sql, [date, user_id]);
     return result;
