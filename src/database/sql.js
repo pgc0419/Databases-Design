@@ -278,63 +278,23 @@ export const createSql = {
       throw error;
     }
   },
-
-  addSeatReservation: async(data) => {
-    const {
-      flight_number, leg_number, Date,
-      Seat_number, Customer_name,
-      Customer_phone, User_id
-    } = data;
-
-    try {
-      const [numCheck1] = await promisePool.query(
-        `SELECT COUNT(*) AS count FROM flight WHERE flight_number = ?`, [flight_number]
-      );
-      const [numCheck2] = await promisePool.query(
-        `SELECT COUNT(*) AS count FROM flight_leg WHERE leg_number = ?`, [leg_number]
-      );
-      const [numCheck3] = await promisePool.query(
-        `SELECT COUNT(*) AS count FROM leg_instance WHERE date = ?`, [Date]
-      );
-      const [numCheck4] = await promisePool.query(
-        `SELECT COUNT(*) AS count FROM user WHERE user_id = ?`, [User_id]
-      );
-      if (numCheck1[0].count == 0 || numCheck2[0].count == 0 || numCheck3[0].count == 0 || numCheck4[0].count == 0) {
-        throw new Error(`Error: FK does not exist`)
-      }
-
-      const [seatsCheck] = await promisePool.query(
-        `SELECT Number_of_availabe_seats AS seats FROM leg_instance WHERE leg_number = ?`, [leg_number]
-      );
-      if (seatsCheck[0].seats < Seat_number) {
-        throw new Error(`Error: seats are too many`)
-      }
-
-      const [nameCheck] = await promisePool.query(
-        `SELECT name AS n FROM user WHERE user_id = ?`, [User_id]
-      );
-      const [phoneCheck] = await promisePool.query(
-        `SELECT phone AS p FROM user WHERE user_id = ?`, [User_id]
-      );
-      if (nameCheck[0].n != Customer_name || phoneCheck[0].p != Customer_phone) {
-        throw new Error(`Error: User & Customer does not match`)
-      }
-
-      const [result] = await promisePool.query(
-        `INSERT INTO leg_instance VALUES (?, ?, ?, ?, ?, ?, ?)`, [
-          flight_number, leg_number, Date,
-          flight_number, leg_number, Date,
-          Seat_number, Customer_name,
-          Customer_phone, User_id
-        ]
-      );
-
-      return result;
-    } catch (error) {
-      throw error;
-    }
-  },
 }
+
+// 좌석 예약
+export const callTransaction = {
+    bookSeat: async (data) => {
+      const {flight_number, leg_number, Date, Seat_number, User_id} = data;
+      const sql = `CALL P_BOOK_SEAT(?, ?, ?, ?, ?)`;
+      const [result] = await promisePool.query(sql, [
+        flight_number, leg_number, Date, Seat_number, User_id
+      ]);
+
+      return result[0];
+    }
+}
+
+
+// To Do List: update 문 FK, 제약 조건 만족하도록 transaction 구문 삽입
 
 export const updateSql = {
   updateAirport: async(data) => {
