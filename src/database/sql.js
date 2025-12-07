@@ -290,6 +290,66 @@ export const callTransaction = {
       ]);
 
       return result[0];
+    },
+    // update transaction
+    updateSeatReservation: async (data) => {
+        const {
+            Flight_number, Leg_number, Date, 
+            Old_Seat_number, New_Seat_number, User_id
+        } = data;
+        
+        let connection;
+        try {
+            connection = await pool.getConnection();
+            await connection.beginTransaction();
+
+            await connection.query(
+                `UPDATE LEG_INSTANCE
+                 SET Number_of_available_seats = Number_of_available_seats + 1
+                 WHERE Flight_number = ? AND Leg_number = ? AND Date = ?`,
+                [Flight_number, Leg_number, Date]
+            );
+            
+            const [newResult] = await connection.query(
+                `UPDATE LEG_INSTANCE
+                 SET Number_of_available_seats = Number_of_available_seats - 1
+                 WHERE Flight_number = ? AND Leg_number = ? AND Date = ?
+                   AND Number_of_available_seats > 0`,
+                [Flight_number, Leg_number, Date]
+            );
+
+            if (newResult.affectedRows === 0) {
+                throw new Error('Reservation update failed: New seat is not available.');
+            }
+
+            await connection.query(
+                `DELETE FROM SEAT_RESERVATION
+                 WHERE Flight_number = ? AND Leg_number = ? AND Date = ? AND Seat_number = ?`,
+                [Flight_number, Leg_number, Date, Old_Seat_number]
+            );
+
+            await connection.query(
+                `INSERT INTO SEAT_RESERVATION (
+                    Flight_number, Leg_number, Date, Seat_number, User_id
+                ) VALUES (?, ?, ?, ?, ?)`,
+                [
+                    Flight_number, Leg_number, Date, New_Seat_number, User_id
+                ]
+            );
+
+            await connection.commit();
+            return { message: `Reservation successfully updated from seat ${Old_Seat_number} to ${New_Seat_number}.` };
+
+        } catch (error) {
+            if (connection) {
+                await connection.rollback();
+            }
+            throw new Error(`Transaction failed: ${error.message}`);
+        } finally {
+            if (connection) {
+                connection.release();
+            }
+        }
     }
 }
 
@@ -305,6 +365,21 @@ export const updateSql = {
         State = ?
       WHERE
         Airport_code = ?;
+    `;
+    const [result] = await promisePool.query(sql, params);
+    return result;
+  },
+  
+  updateAirplaneType: async(data) => {
+    const {Airplane_type_name, Max_seats, Company} = data;
+    const params = [Max_seats, Company, Airplane_type_name];
+    const sql = `
+      UPDATE airplane_type
+      SET
+        Max_seats = ?,
+        Company = ?
+      WHERE
+        Airplane_type_name = ?;
     `;
     const [result] = await promisePool.query(sql, params);
     return result;
@@ -338,23 +413,21 @@ export const updateSql = {
     return result;
   },
 
-  updateAirplaneType: async(data) => {
-    const {Airplane_type_name, Max_seats, Company} = data;
-    const params = [Max_seats, Company, Airplane_type_name];
-    const sql = `
-      UPDATE airplane_type
-      SET
-        Max_seats = ?,
-        Company = ?
-      WHERE
-        Airplane_type_name = ?;
-    `;
-    const [result] = await promisePool.query(sql, params);
-    return result;
-  },
-
   updateAirplane: async(data) => {
     const {Airplane_id, Total_number_of_seats, Airplane_type} = data;
+    const [typeCheck] = await promisePool.query(
+      `SELECT COUNT(*) AS count FROM airplane_type WHERE airplane_type_name = ?`, [airplane_type]
+    );
+    if (typeCheck[0].count == 0) {
+      throw new Error(`Error: Airlane Type does not exist`)
+    }
+
+    const [seatsCheck] = await promisePool.query(
+      `SELECT max_seats AS seats FROM airplane_type WHERE airplane_type_name = ?`, [airplane_type]
+    );
+    if (seatsCheck[0].seats != Total_number_of_seats) {
+      throw new Error(`Error: seats does not match`)
+    }
     const params = [Total_number_of_seats, Airplane_type, Airplane_id];
     const sql = `
       UPDATE airplane
