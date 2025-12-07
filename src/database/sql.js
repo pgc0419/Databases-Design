@@ -293,9 +293,6 @@ export const callTransaction = {
     }
 }
 
-
-// To Do List: update 문 FK, 제약 조건 만족하도록 transaction 구문 삽입
-
 export const updateSql = {
   updateAirport: async(data) => {
     const {Airport_code, Name, City, State} = data;
@@ -313,6 +310,7 @@ export const updateSql = {
     return result;
   },
 
+  // 수정 필요
   updateCanLand: async(data) => {
     const {Airplane_type_name, Airport_code} = data;
     const params = [Airplane_type_name, Airport_code];
@@ -359,15 +357,20 @@ export const updateSql = {
 
   updateFare: async(data) => {
     const {Flight_number, Fare_code, Amount, Restrictions} = data;
-    const params = [Flight_number, Amount, Restrictions, Fare_code];
+    const [numCheck] = await promisePool.query(
+      `SELECT COUNT(*) AS count FROM flight WHERE flight_number = ?`, [Flight_number]
+    );
+    if (numCheck[0].count == 0) {
+      throw new Error(`Error: New Flight number does not exist`);
+    }
+    const params = [Amount, Restrictions, Flight_number, Fare_code];
     const sql = `
       UPDATE fare
       SET
-        Flight_number = ?,
         Amount = ?,
         Restrictions = ?
       WHERE
-        Fare_code = ?;
+        Flight_number = ? AND Fare_code = ?;
     `;
     const [result] = await promisePool.query(sql, params);
     return result;
@@ -388,33 +391,44 @@ export const updateSql = {
     return result;
   },
 
+  // 수정 필요 
   updateFlightLeg: async(data) => {
     const {
       Flight_number, Leg_number, 
       Departure_airport_code, Scheduled_departure_time, 
       Arrival_airport_code, Scheduled_arrival_time
     } = data;
+
+    const [airpotCheck1] = await promisePool.query (
+      `SELECT COUNT(*) AS count FROM airport WHERE airport_code = ?`, [Departure_airport_code]
+    );
+    const [airpotCheck2] = await promisePool.query (
+      `SELECT COUNT(*) AS count FROM airport WHERE airport_code = ?`, [Arrival_airport_code]
+    );
+    if (airpotCheck1[0].count == 0 || airpotCheck2[0].count == 0 ) {
+      throw new Error(`Error: New Airport code does not exist`);
+    }
+
     const params = [
-      Flight_number,
       Departure_airport_code, Scheduled_departure_time, 
       Arrival_airport_code, Scheduled_arrival_time,
-      Leg_number
+      Flight_number, Leg_number
     ];
     const sql = `
       UPDATE flight_leg
       SET
-        Flight_number = ?,
         Departure_airport_code = ?,
         Scheduled_departure_time,
         Arrival_airport_code,
         Scheduled_arrival_time
       WHERE
-        Leg_number = ?;
+        Flight_number = ? AND Leg_number = ?;
     `;
     const [result] = await promisePool.query(sql, params);
     return result;
   },
 
+  // 수정 필요 
   updateLegInstance: async(data) => {
     const {
       Flight_number, Leg_number, Date,
@@ -447,6 +461,7 @@ export const updateSql = {
     return result;
   },
 
+  // 수정 필요 
   updateSeatReservation: async(data) => {
     const {
       Flight_number, Leg_number, Date,
