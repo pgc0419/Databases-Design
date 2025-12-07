@@ -632,19 +632,19 @@ export const deleteSql = {
     return result;
   },
 
-  deleteCanLand: async (airport_code, airplane_type_name) => {
-    const sql = `
-      DELETE can_land WHERE airport_code = ? and airplane_type_name = ?
-    `;
-    const [result] = await promisePool.query(sql, [airport_code, airplane_type_name]);
-    return result;
-  },
-
   deleteAirplaneType: async (id) => {
     const sql = `
       DELETE airplane_type WHERE airplane_type_name = ?
     `;
     const [result] = await promisePool.query(sql, id);
+    return result;
+  },
+
+  deleteCanLand: async (airport_code, airplane_type_name) => {
+    const sql = `
+      DELETE can_land WHERE airport_code = ? and airplane_type_name = ?
+    `;
+    const [result] = await promisePool.query(sql, [airport_code, airplane_type_name]);
     return result;
   },
 
