@@ -350,6 +350,52 @@ export const callTransaction = {
                 connection.release();
             }
         }
+    },
+    //delete transaction
+    deleteSeatReservation: async (data) => {
+        const {
+            Flight_number, Leg_number, Date, Seat_number
+        } = data;
+        
+        let connection;
+        try {
+            connection = await pool.getConnection();
+            await connection.beginTransaction();
+
+            const [deleteResult] = await connection.query(
+                `DELETE FROM SEAT_RESERVATION
+                 WHERE Flight_number = ? AND Leg_number = ? AND Date = ? AND Seat_number = ?`,
+                [Flight_number, Leg_number, Date, Seat_number]
+            );
+
+            if (deleteResult.affectedRows === 0) {
+                throw new Error('Reservation not found or already cancelled.');
+            }
+
+            const [updateResult] = await connection.query(
+                `UPDATE LEG_INSTANCE
+                 SET Number_of_available_seats = Number_of_available_seats + 1
+                 WHERE Flight_number = ? AND Leg_number = ? AND Date = ?`,
+                [Flight_number, Leg_number, Date]
+            );
+
+            if (updateResult.affectedRows === 0) {
+                 throw new Error('Leg Instance not found for seat count update.');
+            }
+            
+            await connection.commit();
+            return { message: `Reservation for seat ${Seat_number} successfully cancelled.` };
+
+        } catch (error) {
+            if (connection) {
+                await connection.rollback();
+            }
+            throw new Error(`Cancellation transaction failed: ${error.message}`);
+        } finally {
+            if (connection) {
+                connection.release();
+            }
+        }
     }
 }
 
@@ -639,14 +685,6 @@ export const deleteSql = {
       DELETE leg_instance WHERE leg_instance = ?
     `;
     const [result] = await promisePool.query(sql, id);
-    return result;
-  },
-
-  deleteSeatReservation: async (id, user_id) => {
-    const sql = `
-      DELETE Seat_reservation WHERE seat_number = ? and user_id = ?
-    `;
-    const [result] = await promisePool.query(sql, [id, user_id]);
     return result;
   },
     
