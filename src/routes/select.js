@@ -5,9 +5,9 @@ const router = express.Router();
 
 router.get('/admin', async function (req, res) {
     const userEmail = req.cookies.user_email;
-    const airport = await selectSql.getAirport();
-    const airplane = await selectSql.getAirplane();
-    const flight = await selectSql.getFlight();
+    const airport = await selectSql.getAirportV();
+    const airplane = await selectSql.getAirplaneV();
+    const flight = await selectSql.getFlightV();
     const flightLeg = await selectSql.getFlightLeg(flight_number);
     const legInstance = await selectSql.getLegInstance(leg_number, airplane_id);
     
@@ -24,6 +24,43 @@ router.get('/admin', async function (req, res) {
             flight,
             flightLeg,
             legInstance
+        });
+    } else {
+        res.render('/')
+    }
+});
+
+router.get('/admin/control', async function (req, res) {
+    const userEmail = req.cookies.user_email;
+    const getAirport = await selectSql.getAirport();
+    const getAirplane = await selectSql.getAirplane();
+    const getAirplaneType = await selectSql.getAirplaneType();
+    const getCanLand = await selectSql.getCanLand();
+    const getFlight = await selectSql.getFlight();
+    const getFare = await selectSql.getFare();
+    const getFlightLeg = await selectSql.getFlightLeg();
+    const getLegInstance = await selectSql.getLegInstance();
+    
+    if (userEmail) {
+        res.render(`control`, {
+            user: req.cookies.user_email,
+            main_title: "CONTROL for admin",
+            title: "airport",
+            title2: "airplane",
+            title3: "airplaneType",
+            title4: "canLand",
+            title5: "flight",
+            title6: "fare",
+            title7: "flightLeg",
+            title8: "legInstance",
+            getAirport,
+            getAirplane,
+            getAirplaneType,
+            getCanLand,
+            getFlight,
+            getFare,
+            getFlightLeg,
+            getLegInstance
         });
     } else {
         res.render('/admin')
@@ -44,7 +81,7 @@ router.get('/user', async function (req, res) {
             seatReservation
         });
     } else {
-        res.render('/admin')
+        res.render('/')
     }
 });
 

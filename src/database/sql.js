@@ -27,20 +27,56 @@ export const selectSql = {
     return result;
   },
 
-  getAirport: async () => {
+  getAirportV: async () => {
     const sql = `SELECT * FROM airport_landing_v`;
     const [result] = await promisePool.query(sql);
     return result;
   },
 
-  getAirplane: async () => {
+  getAirplaneV: async () => {
     const sql = `SELECT * FROM airplane_detail_v`;
     const [result] = await promisePool.query(sql);
     return result;
   },
 
-  getFlight: async () => {
+  getFlightV: async () => {
     const sql = `SELECT * FROM flight_fare_v`;
+    const [result] = await promisePool.query(sql);
+    return result;
+  },
+
+  getAirport: async () => {
+    const sql = `SELECT * FROM airport`;
+    const [result] = await promisePool.query(sql);
+    return result;
+  },
+
+  getAirplane: async () => {
+    const sql = `SELECT * FROM airplane`;
+    const [result] = await promisePool.query(sql);
+    return result;
+  },
+
+  getAirplaneType: async () => {
+    const sql = `SELECT * FROM airplaneType`;
+    const [result] = await promisePool.query(sql);
+    return result;
+  },
+
+  getCanLand: async () => {
+    const sql = `SELECT * FROM canLand`;
+    const [result] = await promisePool.query(sql);
+    return result;
+  },
+
+  getFlight: async () => {
+    const sql = `SELECT * FROM flight`;
+    const [result] = await promisePool.query(sql);
+    return result;
+  },
+
+  getFare: async () => {
+    const sql = `SELECT * FROM fare`;
     const [result] = await promisePool.query(sql);
     return result;
   },
