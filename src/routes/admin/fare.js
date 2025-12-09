@@ -14,8 +14,10 @@ router.get('/admin/control/fare', async function (req, res) {
 router.post('/admin/control/fare/add', async function (req, res) {
     const vars = req.body;
     const data = {
-        airplane_type_name: vars.airplane_type_name,
-        airport_code: vars.airport_code,
+        flight_number: vars.flight_number,
+        fare_code: vars.fare_code,
+        Amount: vars.amount,
+        Restrictions: vars.restrictions,
     }
     await createSql.addFare(data);
     res.redirect('/admin/control/fare');
@@ -24,8 +26,8 @@ router.post('/admin/control/fare/add', async function (req, res) {
 router.post('/admin/control/fare/update', async function (req, res) {
     const vars = req.body;
     const data = {
-        flight_number: vars.flight_number,
-        fare_code: vars.fare_code,
+        Flight_number: vars.flight_number,
+        Fare_code: vars.fare_code,
         Amount: vars.amount,
         Restrictions: vars.restrictions,
     }
