@@ -35,7 +35,7 @@ router.post('/admin/control/flight/update', async function (req, res) {
 
 router.post('/admin/control/flight/delete', async function (req, res) {
     const vars = req.body;
-    const id = vars.fare_code;
+    const id = vars.flight_number;
     await deleteSql.deleteFare(id);
     res.redirect('/admin/control/flight');
 });
