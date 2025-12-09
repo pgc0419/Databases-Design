@@ -3,6 +3,16 @@ import { selectSql} from "../database/sql";
 
 const router = express.Router();
 
+router.get('/', async function (req, res) {   
+    if (req.session.user.role == undefined) {
+        res.redirect('/');
+    } else if (req.session.user.role == 'admin') {
+        res.redirect('/admin');
+    } else if (req.session.user.role == 'auser') {
+        res.redirect('/user');
+    }
+})
+
 router.get('/admin', async function (req, res) {
     const userEmail = req.cookies.user_email;
     const airport = await selectSql.getAirportV();

@@ -1,19 +1,40 @@
 import express from "express";
-import bodyParser from "body-parser";
-import path from 'path';
-import sql from './sql';
+import logger from "morgan";
+import path from "path";
+import liveReload from 'livereload';
+import connectLiveReload from 'connect-livereload';
+
+import loginRouter from "./routes/login";
+import logoutRouter from './routes/logout';
+import selectRouter from "./routes/select";
+
+const PORT = 3000;
+
+const liveReloadServer = liveReload.createServer(); 
+liveReloadServer.server.once("connection", () => {
+  setTimeout(() => {
+    liveReloadServer.refresh('/');
+  }, 100)
+});
 
 const app = express();
 
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use(connectLiveReload());
 
-app.get("/", async (req, res)=>{
-    //res.sendFile(path.join(__dirname+'/index.html'));
-    const employee = await sql.getEmployee();
-    res.json({"Employee": employee})
+app.use(express.urlencoded({ extended: false }));
+app.use(express.json());
+
+app.set("views", path.join(__dirname, "views"));
+app.set("view engine", "hbs");
+app.use(express.static(path.join(__dirname, 'public')));
+// css 경로 설정
+
+app.use(logger("dev"));
+
+app.use("/", loginRouter);
+app.use("/logout", logoutRouter);
+app.use("/", selectRouter);
+
+app.listen(PORT, () => {
+  console.log(`Example app listening at http://localhost:${PORT}`);
 });
-
-app.listen(3000, ()=>{
-    console.log("Server is running on port 3000.");
-})
