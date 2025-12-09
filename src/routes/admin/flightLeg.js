@@ -42,6 +42,6 @@ router.post('/admin/control/flightLeg/update', async function (req, res) {
 router.post('/admin/control/flightLeg/delete', async function (req, res) {
     const vars = req.body;
     const id = vars.leg_number;
-    await deleteSql.deleteFare(id);
+    await deleteSql.deleteFlightLeg(id);
     res.redirect('/admin/control/flightLeg');
 });
