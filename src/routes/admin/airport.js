@@ -31,13 +31,13 @@ router.post('/admin/control/airport/update', async function (req, res) {
         City: vars.city,
         State: vars.state,
     }
-    await updateSql.addAirport(data);
+    await updateSql.updateAirport(data);
     res.redirect('/admin/control/airport');
 });
 
 router.post('/admin/control/airport/delete', async function (req, res) {
     const vars = req.body;
     const id = vars.airport_code;
-    await deleteSql.addAirport(id);
+    await deleteSql.deleteAirport(id);
     res.redirect('/admin/control/airport');
 });
