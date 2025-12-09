@@ -52,6 +52,7 @@ app.use("/airplaneType", airplaneTypeRouter);
 app.use("/airport", airportRouter);
 app.use("/canLand", canLandRouter);
 app.use("/fare", fareRouter);
+app.use("/flight", flightRouter);
 app.use("/flightLeg", flightLegRouter);
 app.use("/legInstance", legInstanceRouter);
 
