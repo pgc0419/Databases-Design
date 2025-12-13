@@ -1,0 +1,128 @@
+<h1>사용자 페이지</h1>
+
+<h2>{{ title1 }}</h2>
+<table>
+  <tr>
+    <td>Flight_number</td>
+    <td>Leg_number</td>
+    <td>Date</td>
+    <td>Number_of_available_seats</td>
+    <td>Airplane_id</td>
+    <td>Departure_airport_code</td>
+    <td>Departure_time</td>
+    <td>Arrival_airport_code</td>
+    <td>Arrival_time</td>
+  </tr>
+  {{#each legInstance}}
+  <tr>
+    <td>{{Flight_number}}</td>
+    <td>{{Leg_number}}</td>
+    <td>{{Date}}</td>
+    <td>{{Number_of_available_seats}}</td>
+    <td>{{Airplane_id}}</td>
+    <td>{{Departure_airport_code}}</td>
+    <td>{{Departure_time}}</td>
+    <td>{{Arrival_airport_code}}</td>
+    <td>{{Arrival_time}}</td>
+  </tr>
+  {{/each}}
+</table>
+
+<h2>{{ title2 }}</h2>
+<table>
+  <thead>
+    <tr>
+      <th>Flight_number</th>
+      <th>Leg_number</th>
+      <th>Date</th>
+      <th>Seat_number</th>
+      <th>Name</th>
+      <th>Phone</th>
+      <th>User_id</th>
+      <th style="border: none;">
+        <button 
+          onclick="toggleCreateRow()" 
+          style="margin-left: 10px;"
+        >
+          Create
+        </button>
+      </th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr id="create-row" style="display: none;">
+            <form id="create-form" method="post" action="/user">
+                <td><input type="text" name="flight_number" placeholder="flight_number" required></td>
+                <td><input type="text" name="leg_number" placeholder="leg_number" required></td>
+                <td><input type="text" name="date" placeholder="date" required></td>
+                <td><input type="text" name="seat_number" placeholder="seat_number" required></td>
+                <td style="border: none;">
+                    <button type="submit" style="margin-left: 10px;">Insert</button>
+                    <button type="button" onclick="toggleCreateRow()">Cancel</button>
+                </td>
+            </form>
+        </tr>
+    {{#each seatReservation}}
+    <tr id = "row-{{Seat_number}}">
+      <td>{{Flight_number}}</td>
+      <td>{{Leg_number}}</td>
+      <td>{{Date}}</td>
+      <td>{{Seat_number}}</td>
+      <td>{{Name}}</td>
+      <td>{{Phone}}</td>
+      <td>{{User_id}}</td>
+      <td style="border: none;">
+        <button 
+          onclick="toggleEditRow('{{Flight_number}}', '{{Leg_number}}', '{{Date}}', '{{Seat_number}}')" 
+          style="margin-left: 10px;"
+        >
+          Update
+        </button>
+        <form method="post" action="/user" style="display: inline;">
+          <input type="hidden" name="flight_number" value="{{Flight_number}}">
+          <input type="hidden" name="leg_number" value="{{Leg_number}}">
+          <input type="hidden" name="date" value="{{Date}}">
+          <input type="hidden" name="seat_number" value="{{Seat_number}}">
+          <input type="hidden" name="_method" value="DELETE"> 
+          <button type="submit" style="margin-left: 10px;">Delete</button>
+        </form>
+      </td>
+    </tr>
+    <tr id="edit-row-{{Seat_number}}" style="display: none;">
+      <form id="update-form-{{Seat_number}}" method="post" action="/user">
+        <input type="hidden" name="_method" value="PUT"> 
+                    
+        <td><input type="text" name="flight_number" value="{{Flight_number}}" required></td>
+        <td><input type="text" name="leg_number" value="{{Leg_number}}" required></td>
+        <td><input type="text" name="date" value="{{Date}}" required></td>
+        <td><input type="text" name="seat_number" value="{{Seat_number}}" required></td>
+        <td style="border: none;">
+          <button type="submit" style="margin-left: 10px;">Save</button>
+          <button type="button" onclick="toggleEditRow('{{Seat_number}}')">Cancel</button>
+        </td>
+      </form>
+    </tr>
+    {{/each}}
+  </tbody>
+</table>
+
+<script>
+    function toggleCreateRow() {
+        const createRow = document.getElementById('create-row');
+        createRow.style.display = createRow.style.display === 'none' ? 'table-row' : 'none';
+    }
+
+    function toggleEditRow(flight_number, leg_number, date, seat_number) {
+        const dataRow = document.getElementById('row-' + seat_number);
+        const editRow = document.getElementById('edit-row-' + seat_number);
+        
+        if (editRow.style.display === 'none') {
+            dataRow.style.display = 'none';
+            editRow.style.display = 'table-row';
+
+        } else {
+            dataRow.style.display = 'table-row';
+            editRow.style.display = 'none';
+        }
+    }
+</script>

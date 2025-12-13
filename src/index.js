@@ -4,8 +4,8 @@ import path from "path";
 import expressSession from "express-session";
 
 import loginRouter from "../routes/login";
-import logoutRouter from '../routes/logout';
-import selectRouter from "../routes/select";
+import adminRouter from '../routes/admin/admin';
+import userRouter from '../routes/user';
 import airplaneRouter from "../routes/admin/airplane";
 import airplaneTypeRouter from "../routes/admin/airplaneType";
 import airportRouter from "../routes/admin/airport";
@@ -36,8 +36,8 @@ app.set('view engine', 'hbs');
 app.use(logger('dev'));
 
 app.use("/", loginRouter);
-app.use("/logout", logoutRouter);
-app.use("/select", selectRouter);
+app.use("/admin", adminRouter);
+app.use("/user", userRouter);
 app.use("/airplane", airplaneRouter);
 app.use("/airplaneType", airplaneTypeRouter);
 app.use("/airport", airportRouter);

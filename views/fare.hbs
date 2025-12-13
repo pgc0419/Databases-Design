@@ -1,0 +1,102 @@
+<h1>
+    {{ main_title }}
+    <td style="border: none; margin-left: 10px;">
+        <button 
+            style="margin-left: 10px;" 
+            onclick="window.location.href='/admin/control'" 
+        >
+        돌아가기
+        </button>
+    </td>
+</h1>
+
+<table>
+    <thead>
+        <tr>
+            <th>Flight_number</th>
+            <th>Fare_code</th>
+            <th>Amount</th>
+            <th>Restrictions</th>
+            <th style="border: none;">
+                <button 
+                    onclick="toggleCreateRow()" 
+                    style="margin-left: 10px;"
+                >
+                    Create
+                </button>
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr id="create-row" style="display: none;">
+            <form id="create-form" method="post" action="/fare">
+                <td><input type="number" name="flight_number" placeholder="flight_number" required></td>
+                <td><input type="number" name="fare_code" placeholder="fare_code" required></td>
+                <td><input type="number" name="amount" placeholder="amount" required></td>
+                <td><input type="text" name="restrictions" placeholder="restrictions" required></td>
+                <td style="border: none;">
+                    <button type="submit" style="margin-left: 10px;">Insert</button>
+                    <button type="button" onclick="toggleCreateRow()">Cancel</button>
+                </td>
+            </form>
+        </tr>
+        
+        {{#each fare_res}}
+            <tr id="row-{{Fare_code}}">
+                <td>{{Flight_number}}</td>
+                <td>{{Fare_code}}</td>
+                <td>{{Amount}}</td>
+                <td>{{Restrictions}}</td>
+                <td style="border: none;">
+                    <button 
+                        onclick="toggleEditRow('{{Flight_number}}', '{{Fare_code}}', '{{Amount}}', '{{Restrictions}}')" 
+                        style="margin-left: 10px;"
+                    >
+                        Update
+                    </button>
+                    <form method="post" action="/fare" style="display: inline;">
+                        <input type="hidden" name="fare_code" value="{{Fare_code}}">
+                        <input type="hidden" name="_method" value="DELETE"> 
+                        <button type="submit" style="margin-left: 10px;">Delete</button>
+                    </form>
+                </td>
+            </tr>
+
+            <tr id="edit-row-{{Fare_code}}" style="display: none;">
+                <form id="update-form-{{Fare_code}}" method="post" action="/fare">
+                    <input type="hidden" name="_method" value="PUT"> 
+                    
+                    <td><input type="number" name="flight_number" value="{{Flight_number}}" readonly></td>
+                    <td><input type="number" name="fare_code" value="{{Fare_code}}" readonly></td>
+                    <td><input type="number" name="amount" value="{{Amount}}" required></td>
+                    <td><input type="text" name="restrictions" value="{{Restrictions}}" required></td>
+                    <td style="border: none;">
+                        <button type="submit" style="margin-left: 10px;">Save</button>
+                        <button type="button" onclick="toggleEditRow('{{Fare_code}}')">Cancel</button>
+                    </td>
+                </form>
+            </tr>
+        {{/each}}
+    </tbody>
+</table>
+
+<script>
+    function toggleCreateRow() {
+        const createRow = document.getElementById('create-row');
+        createRow.style.display = createRow.style.display === 'none' ? 'table-row' : 'none';
+    }
+
+    function toggleEditRow(flight_number, fare_code, amount, restrictions) {
+        const dataRow = document.getElementById('row-' + fare_code);
+        const editRow = document.getElementById('edit-row-' + fare_code);
+        
+        if (editRow.style.display === 'none') {
+            dataRow.style.display = 'none';
+            editRow.style.display = 'table-row';
+
+        } else {
+            dataRow.style.display = 'table-row';
+            editRow.style.display = 'none';
+        }
+    }
+</script>

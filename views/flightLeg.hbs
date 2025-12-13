@@ -1,0 +1,110 @@
+<h1>
+    {{ main_title }}
+    <td style="border: none; margin-left: 10px;">
+        <button 
+            style="margin-left: 10px;" 
+            onclick="window.location.href='/admin/control'" 
+        >
+        돌아가기
+        </button>
+    </td>
+</h1>
+
+<table>
+    <thead>
+        <tr>
+            <th>Flight_number</th>
+            <th>Leg_number</th>
+            <th>Departure_airport_code</th>
+            <th>Scheduled_departure_time</th>
+            <th>Arrival_airport_code</th>
+            <th>Scheduled_arrival_time</th>
+            <th style="border: none;">
+                <button 
+                    onclick="toggleCreateRow()" 
+                    style="margin-left: 10px;"
+                >
+                    Create
+                </button>
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr id="create-row" style="display: none;">
+            <form id="create-form" method="post" action="/flightLeg">
+                <td><input type="number" name="flight_number" placeholder="flight_number" required></td>
+                <td><input type="number" name="leg_number" placeholder="leg_number" required></td>
+                <td><input type="text" name="departure_airport_code" placeholder="departure_airport_code" required></td>
+                <td><input type="number" name="scheduled_departure_time" placeholder="scheduled_departure_time" required></td>
+                <td><input type="text" name="arrival_airport_code" placeholder="arrival_airport_code" required></td>
+                <td><input type="number" name="scheduled_arrival_time" placeholder="scheduled_arrival_time" required></td>
+                <td style="border: none;">
+                    <button type="submit" style="margin-left: 10px;">Insert</button>
+                    <button type="button" onclick="toggleCreateRow()">Cancel</button>
+                </td>
+            </form>
+        </tr>
+        
+        {{#each flightLeg_res}}
+            <tr id="row-{{Leg_number}}">
+                <td>{{Flight_number}}</td>
+                <td>{{Leg_number}}</td>
+                <td>{{Departure_airport_code}}</td>
+                <td>{{Scheduled_departure_time}}</td>
+                <td>{{Arrival_airport_code}}</td>
+                <td>{{Scheduled_arrival_time}}</td>
+                <td style="border: none;">
+                    <button 
+                        onclick="toggleEditRow('{{Flight_number}}', '{{Leg_number}}', '{{Departure_airport_code}}', '{{Scheduled_departure_time}}', '{{Arrival_airport_code}}', '{{Scheduled_arrival_time}}')" 
+                        style="margin-left: 10px;"
+                    >
+                        Update
+                    </button>
+                    <form method="post" action="/flightLeg" style="display: inline;">
+                        <input type="hidden" name="leg_number" value="{{Leg_number}}">
+                        <input type="hidden" name="_method" value="DELETE"> 
+                        <button type="submit" style="margin-left: 10px;">Delete</button>
+                    </form>
+                </td>
+            </tr>
+
+            <tr id="edit-row-{{Leg_number}}" style="display: none;">
+                <form id="update-form-{{Leg_number}}" method="post" action="/flightLeg">
+                    <input type="hidden" name="_method" value="PUT"> 
+                    
+                    <td><input type="number" name="flight_number" value="{{Flight_number}}" readonly></td>
+                    <td><input type="number" name="leg_number" value="{{Leg_number}}" required></td>
+                    <td><input type="text" name="departure_airport_code" value="{{Departure_airport_code}}" required></td>
+                    <td><input type="number" name="scheduled_departure_time" value="{{Scheduled_departure_time}}" required></td>
+                    <td><input type="text" name="arrival_airport_code" value="{{Arrival_airport_code}}" required></td>
+                    <td><input type="number" name="scheduled_arrival_time" value="{{Scheduled_arrival_time}}" required></td>
+                    <td style="border: none;">
+                        <button type="submit" style="margin-left: 10px;">Save</button>
+                        <button type="button" onclick="toggleEditRow('{{Leg_number}}')">Cancel</button>
+                    </td>
+                </form>
+            </tr>
+        {{/each}}
+    </tbody>
+</table>
+
+<script>
+    function toggleCreateRow() {
+        const createRow = document.getElementById('create-row');
+        createRow.style.display = createRow.style.display === 'none' ? 'table-row' : 'none';
+    }
+
+    function toggleEditRow(flight_number, leg_number, departure_airport_code, scheduled_departure_time, arrival_airport_code, scheduled_arrival_time) {
+        const dataRow = document.getElementById('row-' + leg_number);
+        const editRow = document.getElementById('edit-row-' + leg_number);
+        
+        if (editRow.style.display === 'none') {
+            dataRow.style.display = 'none';
+            editRow.style.display = 'table-row';
+
+        } else {
+            dataRow.style.display = 'table-row';
+            editRow.style.display = 'none';
+        }
+    }
+</script>

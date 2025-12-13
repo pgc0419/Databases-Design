@@ -1,0 +1,102 @@
+<h1>
+    {{ main_title }}
+    <td style="border: none; margin-left: 10px;">
+        <button 
+            style="margin-left: 10px;" 
+            onclick="window.location.href='/admin/control'" 
+        >
+        돌아가기
+        </button>
+    </td>
+</h1>
+
+<table>
+    <thead>
+        <tr>
+            <th>Airport_code</th>
+            <th>Name</th>
+            <th>City</th>
+            <th>State</th>
+            <th style="border: none;">
+                <button 
+                    onclick="toggleCreateRow()" 
+                    style="margin-left: 10px;"
+                >
+                    Create
+                </button>
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr id="create-row" style="display: none;">
+            <form id="create-form" method="post" action="/airport">
+                <td><input type="text" name="airport_code" placeholder="airport_code" required></td>
+                <td><input type="text" name="name" placeholder="name" required></td>
+                <td><input type="text" name="city" placeholder="city" required></td>
+                <td><input type="text" name="state" placeholder="state" required></td>
+                <td style="border: none;">
+                    <button type="submit" style="margin-left: 10px;">Insert</button>
+                    <button type="button" onclick="toggleCreateRow()">Cancel</button>
+                </td>
+            </form>
+        </tr>
+        
+        {{#each airport_res}}
+            <tr id="row-{{Airport_code}}">
+                <td>{{Airport_code}}</td>
+                <td>{{Name}}</td>
+                <td>{{City}}</td>
+                <td>{{State}}</td>
+                <td style="border: none;">
+                    <button 
+                        onclick="toggleEditRow('{{Airport_code}}', '{{Name}}', '{{City}}', '{{State}}')" 
+                        style="margin-left: 10px;"
+                    >
+                        Update
+                    </button>
+                    <form method="post" action="/airport" style="display: inline;">
+                        <input type="hidden" name="airport_code" value="{{Airport_code}}">
+                        <input type="hidden" name="_method" value="DELETE"> 
+                        <button type="submit" style="margin-left: 10px;">Delete</button>
+                    </form>
+                </td>
+            </tr>
+
+            <tr id="edit-row-{{Airport_code}}" style="display: none;">
+                <form id="update-form-{{Airport_code}}" method="post" action="/airport">
+                    <input type="hidden" name="_method" value="PUT"> 
+                    
+                    <td><input type="text" name="airport_code" value="{{Airport_code}}" required></td>
+                    <td><input type="text" name="name" value="{{Name}}" required></td>
+                    <td><input type="text" name="city" value="{{City}}" required></td>
+                    <td><input type="text" name="state" value="{{State}}" required></td>
+                    <td style="border: none;">
+                        <button type="submit" style="margin-left: 10px;">Save</button>
+                        <button type="button" onclick="toggleEditRow('{{Airport_code}}')">Cancel</button>
+                    </td>
+                </form>
+            </tr>
+        {{/each}}
+    </tbody>
+</table>
+
+<script>
+    function toggleCreateRow() {
+        const createRow = document.getElementById('create-row');
+        createRow.style.display = createRow.style.display === 'none' ? 'table-row' : 'none';
+    }
+
+    function toggleEditRow(airport_code, name, city, state) {
+        const dataRow = document.getElementById('row-' + airport_code);
+        const editRow = document.getElementById('edit-row-' + airport_code);
+        
+        if (editRow.style.display === 'none') {
+            dataRow.style.display = 'none';
+            editRow.style.display = 'table-row';
+
+        } else {
+            dataRow.style.display = 'table-row';
+            editRow.style.display = 'none';
+        }
+    }
+</script>

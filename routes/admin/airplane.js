@@ -3,15 +3,37 @@ import { selectSql, createSql, updateSql, deleteSql } from '../../database/sql';
 
 const router = express.Router();
 
-router.get('/admin/control/airplane', async function (req, res) {
+router.get('/', async function (req, res) {
     const airplane_res = await selectSql.getAirplane();
-    res.render('controlAirplane', {
+    res.render('airplane', {
         main_title: "Control Airplane table",
         airplane_res,
     });
 });
 
-router.post('/admin/control/airplane/add', async function (req, res) {
+router.post('/', async function (req, res) {
+    if (req.body._method === 'PUT') {
+        const vars = req.body;
+        const data = {
+            Airplane_id: vars.airplane_id,
+            Total_number_of_seats: vars.total_number_of_seats,
+            Airplane_type: vars.airplane_type,
+        }
+        await updateSql.updateAirplane(data);
+        res.redirect('/airplane');
+    }
+
+    if (req.body._method === 'DELETE') {
+        const vars = req.body;
+        const stringId = vars.airplane_id;
+        if (!stringId) {
+            console.error("오류: 삭제 ID가 전달되지 않았습니다.");
+            return res.redirect('/airplane'); 
+        }
+        const id = parseInt(stringId, 10);
+        await deleteSql.deleteAirplane(id);
+        res.redirect('/airplane');
+    }
     const vars = req.body;
     const data = {
         airplane_id: vars.airplane_id,
@@ -19,25 +41,7 @@ router.post('/admin/control/airplane/add', async function (req, res) {
         airplane_type: vars.airplane_type,
     }
     await createSql.addAirplane(data);
-    res.redirect('/admin/control/airplane');
-});
-
-router.post('/admin/control/airplane/update', async function (req, res) {
-    const vars = req.body;
-    const data = {
-        Airplane_id: vars.airplane_id,
-        Total_number_of_seats: vars.total_number_of_seats,
-        Airplane_type: vars.airplane_type,
-    }
-    await updateSql.updateAirplane(data);
-    res.redirect('/admin/control/airplane');
-});
-
-router.post('/admin/control/airplane/delete', async function (req, res) {
-    const vars = req.body;
-    const id = vars.airplane_id;
-    await deleteSql.deleteAirplane(id);
-    res.redirect('/admin/control/airplane');
+    res.redirect('/airplane');
 });
 
 module.exports = router;

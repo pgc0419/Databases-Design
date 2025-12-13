@@ -1,0 +1,239 @@
+<h1>
+    관리자 페이지 - 테이블 관리
+    <td style="border: none; margin-left: 10px;">
+        <button 
+            style="margin-left: 10px;" 
+            onclick="window.location.href='/admin'" 
+        >
+        돌아가기
+        </button>
+    </td>
+</h1>
+
+<h2>
+    {{ title1 }}
+    <td style="border: none; margin-left: 10px;">
+        <button 
+            style="margin-left: 10px;" 
+            onclick="window.location.href='/airport'" 
+        >
+        수정
+        </button>
+    </td>
+</h2>
+<table>
+  <tr>
+    <td>Airport_code</td>
+    <td>Name</td>
+    <td>City</td>
+    <td>State</td>
+  </tr>
+  {{#each getAirport}}
+  <tr>
+    <td>{{Airport_code}}</td>
+    <td>{{Name}}</td>
+    <td>{{City}}</td>
+    <td>{{State}}</td>
+  </tr>
+  {{/each}}
+</table>
+
+<h2>
+    {{ title2 }}
+    <td style="border: none; margin-left: 10px;">
+        <button 
+            style="margin-left: 10px;" 
+            onclick="window.location.href='/airplane'" 
+        >
+        수정
+        </button>
+    </td>
+</h2>
+<table>
+  <tr>
+    <td>Airplane_id</td>
+    <td>Total_number_of_seats</td>
+    <td>Airplane_type</td>
+  </tr>
+  {{#each getAirplane}}
+  <tr>
+    <td>{{Airplane_id}}</td>
+    <td>{{Total_number_of_seats}}</td>
+    <td>{{Airplane_type}}</td>
+  </tr>
+  {{/each}}
+</table>
+
+<h2>
+    {{ title3 }}
+    <td style="border: none; margin-left: 10px;">
+        <button 
+            style="margin-left: 10px;" 
+            onclick="window.location.href='/airplaneType'" 
+        >
+        수정
+        </button>
+    </td>
+</h2>
+<table>
+  <tr>
+    <td>Airplane_type_name</td>
+    <td>Max_seats</td>
+    <td>Company</td>
+  </tr>
+  {{#each getAirplaneType}}
+  <tr>
+    <td>{{Airplane_type_name}}</td>
+    <td>{{Max_seats}}</td>
+    <td>{{Company}}</td>
+  </tr>
+  {{/each}}
+</table>
+
+<h2>
+    {{ title4 }}
+    <td style="border: none; margin-left: 10px;">
+        <button 
+            style="margin-left: 10px;" 
+            onclick="window.location.href='/canLand'" 
+        >
+        수정
+        </button>
+    </td>
+</h2>
+<table>
+  <tr>
+    <td>Airplane_type_name</td>
+    <td>Airport_code</td>
+  </tr>
+  {{#each getCanLand}}
+  <tr>
+    <td>{{Airplane_type_name}}</td>
+    <td>{{Airport_code}}</td>
+  </tr>
+  {{/each}}
+</table>
+
+<h2>
+    {{ title5 }}
+    <td style="border: none; margin-left: 10px;">
+        <button 
+            style="margin-left: 10px;" 
+            onclick="window.location.href='/flight'" 
+        >
+        수정
+    </button>
+    </td>
+</h2>
+<table>
+  <tr>
+    <td>Flight_number</td>
+    <td>Airline</td>
+    <td>Weekdays</td>
+  </tr>
+  {{#each getFlight}}
+  <tr>
+    <td>{{Flight_number}}</td>
+    <td>{{Airline}}</td>
+    <td>{{Weekdays}}</td>
+  </tr>
+  {{/each}}
+</table>
+
+<h2>
+    {{ title6 }}
+    <td style="border: none; margin-left: 10px;">
+        <button 
+            style="margin-left: 10px;" 
+            onclick="window.location.href='/fare'" 
+        >
+        수정
+    </button>
+    </td>
+</h2>
+<table>
+  <tr>
+    <td>Flight_number</td>
+    <td>Fare_code</td>
+    <td>Amount</td>
+    <td>Restrictions</td>
+  </tr>
+  {{#each getFare}}
+  <tr>
+    <td>{{Flight_number}}</td>
+    <td>{{Fare_code}}</td>
+    <td>{{Amount}}</td>
+    <td>{{Restrictions}}</td>
+  </tr>
+  {{/each}}
+</table>
+
+<h2>
+    {{ title7 }}
+    <td style="border: none; margin-left: 10px;">
+        <button 
+            style="margin-left: 10px;" 
+            onclick="window.location.href='/flightLeg'" 
+        >
+        수정
+    </button>
+    </td>
+</h2>
+<table>
+  <tr>
+    <td>Flight_number</td>
+    <td>Leg_number</td>
+    <td>Departure_airport_code</td>
+    <td>Scheduled_departure_time</td>
+    <td>Arrival_airport_code</td>
+    <td>Scheduled_arrival_time</td>
+  </tr>
+  {{#each getFlightLeg }}
+  <tr>
+    <td>{{Flight_number}}</td>
+    <td>{{Leg_number}}</td>
+    <td>{{Departure_airport_code}}</td>
+    <td>{{Scheduled_departure_time}}</td>
+    <td>{{Arrival_airport_code}}</td>
+    <td>{{Scheduled_arrival_time}}</td>
+  </tr>
+  {{/each}}
+</table>
+
+<h2>
+    {{ title8 }}
+    <td style="border: none; margin-left: 10px;">
+        <button 
+            style="margin-left: 10px;" 
+            onclick="window.location.href='/legInstance'" 
+        >
+        수정
+    </button>
+    </td>
+</h2>
+<table>
+  <tr>
+    <td>Flight_number</td>
+    <td>Leg_number</td>
+    <td>Date</td>
+    <td>Number_of_available_seats</td>
+    <td>Airplane_id</td>
+    <td>Departure_airport_code</td>
+    <td>Departure_time</td>
+    <td>Arrival_airport_code</td>
+    <td>Arrival_time</td>
+  </tr>
+  {{#each getLegInstance}}
+  <tr>
+    <td>{{Flight_number}}</td>
+    <td>{{Leg_number}}</td>
+    <td>{{Date}}</td>
+    <td>{{Number_of_available_seats}}</td>
+    <td>{{Airplane_id}}</td>
+    <td>{{Departure_airport_code}}</td>
+    <td>{{Departure_time}}</td>
+    <td>{{Arrival_airport_code}}</td>
+    <td>{{Arrival_time}}</td>
+  </tr>
+  {{/each}}
+</table>

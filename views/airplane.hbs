@@ -1,0 +1,98 @@
+<h1>
+    {{ main_title }}
+    <td style="border: none; margin-left: 10px;">
+        <button 
+            style="margin-left: 10px;" 
+            onclick="window.location.href='/admin/control'" 
+        >
+        돌아가기
+        </button>
+    </td>
+</h1>
+
+<table>
+    <thead>
+        <tr>
+            <th>Airplane_id</th>
+            <th>Total_number_of_seats</th>
+            <th>Airplane_type</th>
+            <th style="border: none;">
+                <button 
+                    onclick="toggleCreateRow()" 
+                    style="margin-left: 10px;"
+                >
+                    Create
+                </button>
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr id="create-row" style="display: none;">
+            <form id="create-form" method="post" action="/airplane">
+                <td><input type="text" name="airplane_id" placeholder="ID" required></td>
+                <td><input type="number" name="total_number_of_seats" placeholder="Seats" required></td>
+                <td><input type="text" name="airplane_type" placeholder="Type" required></td>
+                <td style="border: none;">
+                    <button type="submit" style="margin-left: 10px;">Insert</button>
+                    <button type="button" onclick="toggleCreateRow()">Cancel</button>
+                </td>
+            </form>
+        </tr>
+        
+        {{#each airplane_res}}
+            <tr id="row-{{Airplane_id}}">
+                <td>{{Airplane_id}}</td>
+                <td>{{Total_number_of_seats}}</td>
+                <td>{{Airplane_type}}</td>
+                <td style="border: none;">
+                    <button 
+                        onclick="toggleEditRow('{{Airplane_id}}', '{{Total_number_of_seats}}', '{{Airplane_type}}')" 
+                        style="margin-left: 10px;"
+                    >
+                        Update
+                    </button>
+                    <form method="post" action="/airplane" style="display: inline;">
+                        <input type="hidden" name="airplane_id" value="{{Airplane_id}}">
+                        <input type="hidden" name="_method" value="DELETE"> 
+                        <button type="submit" style="margin-left: 10px;">Delete</button>
+                    </form>
+                </td>
+            </tr>
+
+            <tr id="edit-row-{{Airplane_id}}" style="display: none;">
+                <form id="update-form-{{Airplane_id}}" method="post" action="/airplane">
+                    <input type="hidden" name="_method" value="PUT"> 
+                    
+                    <td><input type="text" name="airplane_id" value="{{Airplane_id}}" readonly></td>
+                    <td><input type="number" name="total_number_of_seats" value="{{Total_number_of_seats}}" required></td>
+                    <td><input type="text" name="airplane_type" value="{{Airplane_type}}" required></td>
+                    <td style="border: none;">
+                        <button type="submit" style="margin-left: 10px;">Save</button>
+                        <button type="button" onclick="toggleEditRow('{{Airplane_id}}')">Cancel</button>
+                    </td>
+                </form>
+            </tr>
+        {{/each}}
+    </tbody>
+</table>
+
+<script>
+    function toggleCreateRow() {
+        const createRow = document.getElementById('create-row');
+        createRow.style.display = createRow.style.display === 'none' ? 'table-row' : 'none';
+    }
+
+    function toggleEditRow(id, seats, type) {
+        const dataRow = document.getElementById('row-' + id);
+        const editRow = document.getElementById('edit-row-' + id);
+        
+        if (editRow.style.display === 'none') {
+            dataRow.style.display = 'none';
+            editRow.style.display = 'table-row';
+
+        } else {
+            dataRow.style.display = 'table-row';
+            editRow.style.display = 'none';
+        }
+    }
+</script>

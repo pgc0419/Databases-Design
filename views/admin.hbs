@@ -1,0 +1,125 @@
+<h1>
+    관리자 페이지
+    <td style="border: none; margin-left: 10px;">
+        <button 
+            style="margin-left: 10px;" 
+            onclick="window.location.href='/admin/control'" 
+        >
+        테이블 관리
+        </button>
+    </td>
+</h1>
+
+<h2>{{ title1 }}</h2>
+<table>
+  <tr>
+    <td>Airport_code</td>
+    <td>Name</td>
+    <td>City</td>
+    <td>State</td>
+    <td>Airplane_type_name</td>
+    <td>Max_seats</td>
+    <td>Company</td>
+  </tr>
+  {{#each airport}}
+  <tr>
+    <td>{{Airport_code}}</td>
+    <td>{{Name}}</td>
+    <td>{{City}}</td>
+    <td>{{State}}</td>
+    <td>{{Airplane_type_name}}</td>
+    <td>{{Max_seats}}</td>
+    <td>{{Company}}</td>
+  </tr>
+  {{/each}}
+</table>
+
+<h2>{{ title2 }}</h2>
+<table>
+  <tr>
+    <td>Airplane_id</td>
+    <td>Total_number_of_seats</td>
+    <td>Airplane_type</td>
+    <td>Company</td>
+  </tr>
+  {{#each airplane}}
+  <tr>
+    <td>{{Airplane_id}}</td>
+    <td>{{Total_number_of_seats}}</td>
+    <td>{{Airplane_type}}</td>
+    <td>{{Company}}</td>
+  </tr>
+  {{/each}}
+</table>
+
+<h2>{{ title3 }}</h2>
+<table>
+  <tr>
+    <td>Flight_number</td>
+    <td>Airline</td>
+    <td>Weekdays</td>
+    <td>Fare_code</td>
+    <td>Amount</td>
+    <td>Restrictions</td>
+  </tr>
+  {{#each flight}}
+  <tr>
+    <td>{{Flight_number}}</td>
+    <td>{{Airline}}</td>
+    <td>{{Weekdays}}</td>
+    <td>{{Fare_code}}</td>
+    <td>{{Amount}}</td>
+    <td>{{Restrictions}}</td>
+  </tr>
+  {{/each}}
+</table>
+
+<h2>{{ title4 }}</h2>
+<table>
+  <tr>
+    <td>Flight_number</td>
+    <td>Leg_number</td>
+    <td>Departure_airport_code</td>
+    <td>Scheduled_departure_time</td>
+    <td>Arrival_airport_code</td>
+    <td>Scheduled_arrival_time</td>
+  </tr>
+  {{#each flightLeg }}
+  <tr>
+    <td>{{Flight_number}}</td>
+    <td>{{Leg_number}}</td>
+    <td>{{Departure_airport_code}}</td>
+    <td>{{Scheduled_departure_time}}</td>
+    <td>{{Arrival_airport_code}}</td>
+    <td>{{Scheduled_arrival_time}}</td>
+  </tr>
+  {{/each}}
+</table>
+
+<h2>{{ title5 }}</h2>
+<table>
+  <tr>
+    <td>Flight_number</td>
+    <td>Leg_number</td>
+    <td>Date</td>
+    <td>Number_of_available_seats</td>
+    <td>Airplane_id</td>
+    <td>Departure_airport_code</td>
+    <td>Departure_time</td>
+    <td>Arrival_airport_code</td>
+    <td>Arrival_time</td>
+  </tr>
+  {{#each legInstance}}
+  <tr>
+    <td>{{Flight_number}}</td>
+    <td>{{Leg_number}}</td>
+    <td>{{Date}}</td>
+    <td>{{Number_of_available_seats}}</td>
+    <td>{{Airplane_id}}</td>
+    <td>{{Departure_airport_code}}</td>
+    <td>{{Departure_time}}</td>
+    <td>{{Arrival_airport_code}}</td>
+    <td>{{Arrival_time}}</td>
+  </tr>
+  {{/each}}
+</table>

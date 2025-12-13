@@ -56,13 +56,13 @@ export const selectSql = {
   },
 
   getAirplaneType: async () => {
-    const sql = `SELECT * FROM airplaneType`;
+    const sql = `SELECT * FROM airplane_type`;
     const [result] = await promisePool.query(sql);
     return result;
   },
 
   getCanLand: async () => {
-    const sql = `SELECT * FROM canLand`;
+    const sql = `SELECT * FROM can_land`;
     const [result] = await promisePool.query(sql);
     return result;
   },
@@ -79,50 +79,34 @@ export const selectSql = {
     return result;
   },
 
-  getFlightLeg: async (flight_number) => {
-    const sql = `
-      SELECT 
-        Leg_number,
-        Departure_airport_code,
-        Scheduled_departure_time,
-        Arrival_airport_code,
-        Scheduled_arrival_time
-      FROM flight_leg
-      WHERE Flight_number = ?
-    `;
-    const [result] = await promisePool.query(sql, [flight_number]);
+  getFlightLeg: async () => {
+    const sql = `SELECT * FROM flight_leg`;
+    const [result] = await promisePool.query(sql);
     return result;
   },
 
-  getLegInstance: async (leg_number, airplane_id) => {
-    const sql = `
-      SELECT
-        Date,
-        Number_of_available_seats,
-        Airplane_id,
-        Departure_airport_code,
-        Departure_time,
-        Arrival_airport_code,
-        Arrival_time
-      FROM leg_instance
-      WHERE Leg_number = ? and Airplane_id = ?
-    `;
-    const [result] = await promisePool.query(sql, [leg_number, airplane_id]);
+  getLegInstance: async () => {
+    const sql = `SELECT * FROM Leg_instance`;
+    const [result] = await promisePool.query(sql);
     return result;
   },
 
-  getSeatReservation: async(date, user_id) => {
+  getSeatReservation: async(user_id) => {
     const sql = `
       SELECT
+        sr.Flight_number,
+        sr.Leg_number,
+        sr.Date,
         sr.Seat_number,
         u.Name,
         u.Phone,
         sr.User_id
       FROM seat_reservation sr
       JOIN user u ON u.user_id = sr.User_id
-      WHERE Date = ? and u.User_id = ?
+      JOIN leg_instance l ON l.date = sr.date
+      WHERE u.User_id = ?
     `;
-    const [result] = await promisePool.query(sql, [date, user_id]);
+    const [result] = await promisePool.query(sql, [user_id]);
     return result;
   }
 }
@@ -136,7 +120,7 @@ export const createSql = {
 
   addAirplaneType: async(data) => {
     const sql = `INSERT INTO airplane_type VALUES (?, ?, ?)`;
-    const [result] = await promisePool.query(sql, [data.Airport_type_name, data.Max_seats, data.Company]);
+    const [result] = await promisePool.query(sql, [data.Airplane_type_name, data.Max_seats, data.Company]);
     return result[0];
   },
 
@@ -147,7 +131,7 @@ export const createSql = {
         `SELECT COUNT(*) AS count FROM airplane_type WHERE airplane_type_name = ?`, [airplane_type_name]
       );
       if (typeCheck[0].count == 0) {
-        throw new Error(`Error: Airlane Type does not exist`)
+        throw new Error(`Error: Airplane Type does not exist`)
       }
 
       const [airportCheck] = await promisePool.query(
@@ -174,7 +158,7 @@ export const createSql = {
         `SELECT COUNT(*) AS count FROM airplane_type WHERE airplane_type_name = ?`, [airplane_type]
       );
       if (typeCheck[0].count == 0) {
-        throw new Error(`Error: Airlane Type does not exist`)
+        throw new Error(`Error: Airplane Type does not exist`)
       }
 
       const [seatsCheck] = await promisePool.query(
@@ -201,17 +185,17 @@ export const createSql = {
   },
 
   addFare: async(data) => {
-    const {flight_number, fare_code, Amount, Restrictions} = data;
+    const {Flight_number, Fare_code, Amount, Restrictions} = data;
     try {
       const [numCheck] = await promisePool.query(
-        `SELECT COUNT(*) AS count FROM flight WHERE flight_number = ?`, [flight_number]
+        `SELECT COUNT(*) AS count FROM flight WHERE flight_number = ?`, [Flight_number]
       );
       if (numCheck[0].count == 0) {
-        throw new Error(`Error: flight number does not exist`)
+        throw new Error(`Error: addFare flight number does not exist`)
       }
 
       const [result] = await promisePool.query(
-        `INSERT INTO fare VALUES (?, ?, ?, ?)`, [flight_number, fare_code, Amount, Restrictions]
+        `INSERT INTO fare VALUES (?, ?, ?, ?)`, [Flight_number, Fare_code, Amount, Restrictions]
       );
 
       return result;
@@ -232,7 +216,7 @@ export const createSql = {
         `SELECT COUNT(*) AS count FROM flight WHERE flight_number = ?`, [flight_number]
       );
       if (numCheck[0].count == 0) {
-        throw new Error(`Error: flight number does not exist`)
+        throw new Error(`Error: addFlightLeg flight number does not exist`)
       }
 
       const [airportCheck1] = await promisePool.query(
@@ -261,30 +245,18 @@ export const createSql = {
 
   addLegInstance: async(data) => {
     const {
-      flight_number, leg_number, Date,
-      Number_of_availabe_seats, Airplane_id,
+      Flight_number, Leg_number, Date,
+      Number_of_available_seats, Airplane_id,
       Departure_airport_code, Departure_time, 
       Arrival_airport_code, Arrival_time
     } = data;
 
     try {
-      const [numCheck1] = await promisePool.query(
-        `SELECT COUNT(*) AS count FROM flight WHERE flight_number = ?`, [flight_number]
-      );
-      const [numCheck2] = await promisePool.query(
-        `SELECT COUNT(*) AS count FROM flight_leg WHERE leg_number = ?`, [leg_number]
-      );
-      const [numCheck3] = await promisePool.query(
-        `SELECT COUNT(*) AS count FROM airplane WHERE airplane_id = ?`, [Airplane_id]
-      );
-      if (numCheck1[0].count == 0 || numCheck2[0].count == 0 || numCheck3[0].count == 0 ) {
-        throw new Error(`Error: FK does not exist`)
-      }
 
       const [seatsCheck] = await promisePool.query(
         `SELECT total_number_of_seats AS seats FROM airplane WHERE airplane_id = ?`, [Airplane_id]
       );
-      if (seatsCheck[0].seats < Number_of_availabe_seats) {
+      if (seatsCheck[0].seats < Number_of_available_seats) {
         throw new Error(`Error: seats are too many`)
       }
 
@@ -300,8 +272,8 @@ export const createSql = {
 
       const [result] = await promisePool.query(
         `INSERT INTO leg_instance VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`, [
-          flight_number, leg_number, Date,
-          Number_of_availabe_seats, Airplane_id,
+          Flight_number, Leg_number, Date,
+          Number_of_available_seats, Airplane_id,
           Departure_airport_code, Departure_time, 
           Arrival_airport_code, Arrival_time
         ]
@@ -317,10 +289,10 @@ export const createSql = {
 // 좌석 예약
 export const callTransaction = {
     bookSeat: async (data) => {
-      const {flight_number, leg_number, Date, Seat_number, User_id} = data;
+      const {Flight_number, Leg_number, Date, Seat_number, User_id} = data;
       const sql = `CALL P_BOOK_SEAT(?, ?, ?, ?, ?)`;
       const [result] = await promisePool.query(sql, [
-        flight_number, leg_number, Date, Seat_number, User_id
+        Flight_number, Leg_number, Date, Seat_number, User_id
       ]);
 
       return result[0];
@@ -329,7 +301,7 @@ export const callTransaction = {
     updateSeatReservation: async (data) => {
         const {
             Flight_number, Leg_number, Date, 
-            Old_Seat_number, New_Seat_number, User_id
+            Seat_number, User_id
         } = data;
         
         let connection;
@@ -358,8 +330,8 @@ export const callTransaction = {
 
             await connection.query(
                 `DELETE FROM SEAT_RESERVATION
-                 WHERE Flight_number = ? AND Leg_number = ? AND Date = ? AND Seat_number = ?`,
-                [Flight_number, Leg_number, Date, Old_Seat_number]
+                 WHERE Flight_number = ? AND Leg_number = ? AND Date = ? AND Seat_number = ? AND User_id = ?`,
+                [Flight_number, Leg_number, Date, Seat_number, User_id]
             );
 
             await connection.query(
@@ -367,12 +339,12 @@ export const callTransaction = {
                     Flight_number, Leg_number, Date, Seat_number, User_id
                 ) VALUES (?, ?, ?, ?, ?)`,
                 [
-                    Flight_number, Leg_number, Date, New_Seat_number, User_id
+                    Flight_number, Leg_number, Date, Seat_number, User_id
                 ]
             );
 
             await connection.commit();
-            return { message: `Reservation successfully updated from seat ${Old_Seat_number} to ${New_Seat_number}.` };
+            return { message: `Reservation successfully updated from seat to ${Seat_number}.` };
 
         } catch (error) {
             if (connection) {
@@ -385,52 +357,24 @@ export const callTransaction = {
             }
         }
     },
-    //delete transaction
     deleteSeatReservation: async (data) => {
-        const {
-            Flight_number, Leg_number, Date, Seat_number
-        } = data;
-        
-        let connection;
-        try {
-            connection = await pool.getConnection();
-            await connection.beginTransaction();
-
-            const [deleteResult] = await connection.query(
-                `DELETE FROM SEAT_RESERVATION
-                 WHERE Flight_number = ? AND Leg_number = ? AND Date = ? AND Seat_number = ?`,
-                [Flight_number, Leg_number, Date, Seat_number]
-            );
-
-            if (deleteResult.affectedRows === 0) {
-                throw new Error('Reservation not found or already cancelled.');
-            }
-
-            const [updateResult] = await connection.query(
-                `UPDATE LEG_INSTANCE
-                 SET Number_of_available_seats = Number_of_available_seats + 1
-                 WHERE Flight_number = ? AND Leg_number = ? AND Date = ?`,
-                [Flight_number, Leg_number, Date]
-            );
-
-            if (updateResult.affectedRows === 0) {
-                 throw new Error('Leg Instance not found for seat count update.');
-            }
-            
-            await connection.commit();
-            return { message: `Reservation for seat ${Seat_number} successfully cancelled.` };
-
-        } catch (error) {
-            if (connection) {
-                await connection.rollback();
-            }
-            throw new Error(`Cancellation transaction failed: ${error.message}`);
-        } finally {
-            if (connection) {
-                connection.release();
-            }
-        }
-    }
+      const sql = `
+        DELETE FROM seat_reservation
+        WHERE
+          Flight_number = ? AND
+          Leg_number = ? AND
+          Date = ? AND
+          Seat_number = ?;
+      `;
+      const [result] = await promisePool.query(sql, [
+        data.flight_number, 
+        data.leg_number, 
+        data.date, 
+        data.seat_number
+    ]);
+    
+      return result;
+    },
 }
 
 export const updateSql = {
@@ -465,45 +409,45 @@ export const updateSql = {
     return result;
   },
 
-  updateCanLand: async(data) => {
-    const {Old_Airplane_type_name, Old_Airport_code, Airplane_type_name, Airport_code} = data;
-    const [typeCheck] = await promisePool.query(
-      `SELECT COUNT(*) AS count FROM airplane_type WHERE airplane_type_name = ?`, [airplane_type_name]
-    );
-    if (typeCheck[0].count == 0) {
-      throw new Error(`Error: Airlane Type does not exist`)
-    }
+  // updateCanLand: async(data) => {
+  //   const {Old_Airplane_type_name, Old_Airport_code, Airplane_type_name, Airport_code} = data;
+  //   const [typeCheck] = await promisePool.query(
+  //     `SELECT COUNT(*) AS count FROM airplane_type WHERE airplane_type_name = ?`, [Airplane_type_name]
+  //   );
+  //   if (typeCheck[0].count == 0) {
+  //     throw new Error(`Error: Airplane Type does not exist`)
+  //   }
 
-    const [airportCheck] = await promisePool.query(
-      `SELECT COUNT(*) AS count FROM airport WHERE airport_code = ?`, [airport_code]
-    );
-    if (airportCheck[0].count == 0) {
-      throw new Error(`Error: Airport Code does not exist`)
-    }
-    const params = [Airplane_type_name, Airport_code, Old_Airplane_type_name, Old_Airport_code];
-    const sql = `
-      UPDATE can_land
-      SET
-        Airplane_type_name = ?,
-        Airport_code = ?
-      WHERE
-        Airplane_type_name = ? AND Airport_code = ?;
-    `;
-    const [result] = await promisePool.query(sql, params);
-    return result;
-  },
+  //   const [airportCheck] = await promisePool.query(
+  //     `SELECT COUNT(*) AS count FROM airport WHERE airport_code = ?`, [Airport_code]
+  //   );
+  //   if (airportCheck[0].count == 0) {
+  //     throw new Error(`Error: Airport Code does not exist`)
+  //   }
+  //   const params = [Old_Airplane_type_name, Old_Airport_code, Airplane_type_name, Airport_code];
+  //   const sql = `
+  //     UPDATE can_land
+  //     SET
+  //       Airplane_type_name = ?,
+  //       Airport_code = ?
+  //     WHERE
+  //       Airplane_type_name = ? AND Airport_code = ?;
+  //   `;
+  //   const [result] = await promisePool.query(sql, params);
+  //   return result;
+  // },
 
   updateAirplane: async(data) => {
     const {Airplane_id, Total_number_of_seats, Airplane_type} = data;
     const [typeCheck] = await promisePool.query(
-      `SELECT COUNT(*) AS count FROM airplane_type WHERE airplane_type_name = ?`, [airplane_type]
+      `SELECT COUNT(*) AS count FROM airplane_type WHERE airplane_type_name = ?`, [Airplane_type]
     );
     if (typeCheck[0].count == 0) {
-      throw new Error(`Error: Airlane Type does not exist`)
+      throw new Error(`Error: Airplane Type does not exist`)
     }
 
     const [seatsCheck] = await promisePool.query(
-      `SELECT max_seats AS seats FROM airplane_type WHERE airplane_type_name = ?`, [airplane_type]
+      `SELECT max_seats AS seats FROM airplane_type WHERE airplane_type_name = ?`, [Airplane_type]
     );
     if (seatsCheck[0].seats != Total_number_of_seats) {
       throw new Error(`Error: seats does not match`)
@@ -588,9 +532,9 @@ export const updateSql = {
       UPDATE flight_leg
       SET
         Departure_airport_code = ?,
-        Scheduled_departure_time,
-        Arrival_airport_code,
-        Scheduled_arrival_time
+        Scheduled_departure_time = ?,
+        Arrival_airport_code = ?,
+        Scheduled_arrival_time = ?
       WHERE
         Flight_number = ? AND Leg_number = ?;
     `;
@@ -601,15 +545,15 @@ export const updateSql = {
   updateLegInstance: async(data) => {
     const {
       Flight_number, Leg_number, Date,
-      Number_of_availabe_seats, Airplane_id,
+      Number_of_available_seats, Airplane_id,
       Departure_airport_code, Departure_time, 
       Arrival_airport_code, Arrival_time
     } = data;
     const [numCheck1] = await promisePool.query(
-      `SELECT COUNT(*) AS count FROM flight WHERE flight_number = ?`, [flight_number]
+      `SELECT COUNT(*) AS count FROM flight WHERE flight_number = ?`, [Flight_number]
     );
     const [numCheck2] = await promisePool.query(
-      `SELECT COUNT(*) AS count FROM flight_leg WHERE leg_number = ?`, [leg_number]
+      `SELECT COUNT(*) AS count FROM flight_leg WHERE leg_number = ?`, [Leg_number]
     );
     const [numCheck3] = await promisePool.query(
       `SELECT COUNT(*) AS count FROM airplane WHERE airplane_id = ?`, [Airplane_id]
@@ -621,7 +565,7 @@ export const updateSql = {
     const [seatsCheck] = await promisePool.query(
       `SELECT total_number_of_seats AS seats FROM airplane WHERE airplane_id = ?`, [Airplane_id]
     );
-    if (seatsCheck[0].seats < Number_of_availabe_seats) {
+    if (seatsCheck[0].seats < Number_of_available_seats) {
       throw new Error(`Error: seats are too many`)
     }
 
@@ -635,7 +579,7 @@ export const updateSql = {
       throw new Error(`Error: Airport Code does not exist`)
     }
     const params = [ 
-      Number_of_availabe_seats, Airplane_id,
+      Number_of_available_seats, Airplane_id,
       Departure_airport_code, Departure_time, 
       Arrival_airport_code, Arrival_time,
       Flight_number, Leg_number, Date
@@ -643,12 +587,12 @@ export const updateSql = {
     const sql = `
       UPDATE leg_instance
       SET
-        Number_of_availabe_seats = ?,
+        Number_of_available_seats = ?,
         Airplane_id = ?,
         Departure_airport_code = ?,
-        Departure_time,
-        Arrival_airport_code,
-        Arrival_time
+        Departure_time = ?,
+        Arrival_airport_code = ?,
+        Arrival_time = ?
       WHERE
         Flight_number = ? AND  Leg_number = ? AND Date = ?;
     `;
@@ -660,65 +604,65 @@ export const updateSql = {
 export const deleteSql = {
   deleteAirport: async (id) => {
     const sql = `
-      DELETE airport WHERE airport_code = ?
+      DELETE FROM airport WHERE airport_code = ?
     `;
-    const [result] = await promisePool.query(sql, id);
+    const [result] = await promisePool.query(sql, [id]);
     return result;
   },
 
   deleteAirplaneType: async (id) => {
     const sql = `
-      DELETE airplane_type WHERE airplane_type_name = ?
+      DELETE FROM airplane_type WHERE airplane_type_name = ?
     `;
-    const [result] = await promisePool.query(sql, id);
+    const [result] = await promisePool.query(sql, [id]);
     return result;
   },
 
-  deleteCanLand: async (airport_code, airplane_type_name) => {
+  deleteCanLand: async (airplane_type_name, airport_code) => {
     const sql = `
-      DELETE can_land WHERE airport_code = ? and airplane_type_name = ?
+      DELETE FROM can_land WHERE airplane_type_name = ? and airport_code = ?
     `;
-    const [result] = await promisePool.query(sql, [airport_code, airplane_type_name]);
+    const [result] = await promisePool.query(sql, [airplane_type_name, airport_code]);
     return result;
   },
 
   deleteAirplane: async (id) => {
     const sql = `
-      DELETE airplane WHERE airplane_id = ?
+      DELETE FROM airplane WHERE airplane_id = ?
     `;
-    const [result] = await promisePool.query(sql, id);
+    const [result] = await promisePool.query(sql, [id]);
     return result;
   },
 
   deleteFare: async (id) => {
     const sql = `
-      DELETE fare WHERE fare_code = ?
+      DELETE FROM fare WHERE fare_code = ?
     `;
-    const [result] = await promisePool.query(sql, id);
+    const [result] = await promisePool.query(sql, [id]);
     return result;
   },
 
   deleteFlight: async (id) => {
     const sql = `
-      DELETE Flight WHERE flight_number = ?
+      DELETE FROM Flight WHERE flight_number = ?
     `;
-    const [result] = await promisePool.query(sql, id);
+    const [result] = await promisePool.query(sql, [id]);
     return result;
   },
 
   deleteFlightLeg: async (id) => {
     const sql = `
-      DELETE flight_leg WHERE leg_number = ?
+      DELETE FROM flight_leg WHERE leg_number = ?
     `;
-    const [result] = await promisePool.query(sql, id);
+    const [result] = await promisePool.query(sql, [id]);
     return result;
   },
 
   deleteLegInstance: async (id) => {
     const sql = `
-      DELETE leg_instance WHERE leg_instance = ?
+      DELETE FROM leg_instance WHERE date = ?
     `;
-    const [result] = await promisePool.query(sql, id);
+    const [result] = await promisePool.query(sql, [id]);
     return result;
   },
     

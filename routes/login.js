@@ -7,27 +7,19 @@ router.get('/', (req, res) => {
     res.render('login');
 });
 
-// router.get('/logout', (req, res) => {
-//     if (req.cookies.user_email) {
-//         res.clearCookie('user_email')
-//         res.redirect("/");
-//     } else {
-//         res.redirect("/");
-//     }
-// })
-
 router.post('/', async (req, res) => {
     const vars = req.body;
     const users = await selectSql.getUser();
 
     users.map((user) => {
+        console.log('id :', user.User_id);
         console.log('email :', user.Email);
         console.log('pwd :', user.Password);
         console.log('vars.email :', vars.email);
         console.log('vars.pwd :', vars.password);
         if (vars.email === user.Email && vars.password === String(user.Password)) {
             console.log('login success!');
-            req.session.user = { email: user.Email, role: user.Role, checkLogin: true };
+            req.session.user = { id: user.User_id, name: user.Name, phone: user.Phone, role: user.Role, checkLogin: true };
         }
     });
 
