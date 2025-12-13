@@ -1,33 +1,24 @@
 import express from "express";
 import logger from "morgan";
 import path from "path";
-import liveReload from 'livereload';
-import connectLiveReload from 'connect-livereload';
+import expressSession from "express-session";
 
-import loginRouter from "./routes/login";
-import logoutRouter from './routes/logout';
-import selectRouter from "./routes/select";
-import airplaneRouter from "./routes/admin/airplane";
-import airplaneTypeRouter from "./routes/admin/airplaneType";
-import airportRouter from "./routes/admin/airport";
-import canLandRouter from "./routes/admin/canLand";
-import fareRouter from "./routes/admin/fare"
-import flightRouter from "./routes/admin/flight";;
-import flightLegRouter from "./routes/admin/flightLeg";
-import legInstanceRouter from "./routes/admin/legInstance";
+import loginRouter from "../routes/login";
+import logoutRouter from '../routes/logout';
+import selectRouter from "../routes/select";
+import airplaneRouter from "../routes/admin/airplane";
+import airplaneTypeRouter from "../routes/admin/airplaneType";
+import airportRouter from "../routes/admin/airport";
+import canLandRouter from "../routes/admin/canLand";
+import fareRouter from "../routes/admin/fare"
+import flightRouter from "../routes/admin/flight";;
+import flightLegRouter from "../routes/admin/flightLeg";
+import legInstanceRouter from "../routes/admin/legInstance";
 
 const PORT = 3000;
 
-const liveReloadServer = liveReload.createServer(); 
-liveReloadServer.server.once("connection", () => {
-  setTimeout(() => {
-    liveReloadServer.refresh('/');
-  }, 100)
-});
-
 const app = express();
 
-app.use(connectLiveReload());
 app.use(express.static(path.join(__dirname, '/src')));
 app.use(express.urlencoded({ extended: false }))
 app.use(express.json());
@@ -46,7 +37,7 @@ app.use(logger('dev'));
 
 app.use("/", loginRouter);
 app.use("/logout", logoutRouter);
-app.use("/", selectRouter);
+app.use("/select", selectRouter);
 app.use("/airplane", airplaneRouter);
 app.use("/airplaneType", airplaneTypeRouter);
 app.use("/airport", airportRouter);
